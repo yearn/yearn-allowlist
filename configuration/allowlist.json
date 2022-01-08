@@ -1,0 +1,10 @@
+{
+  "networkVariables": {
+    "1": {
+      "allowlist_factory_address": "0xef01bC08cf155098bDa7A2efBC7CceF632D03440"
+    },
+    "250": {
+      "allowlist_factory_address": "0xC9DCA59Ec6e6871A9ef730E2CA9A02E469a765D2"
+    }
+  }
+}
