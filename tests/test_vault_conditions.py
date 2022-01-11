@@ -72,7 +72,7 @@ def test_vault_token_approval(allowlist_factory, allowlist, owner, origin_name, 
 # Param 2: Must be a valid vault address
 def test_zap_in(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token, zap_in_contract):
     # We need to manually set the addresses which are yearn zapper contracts on the implementation.
-    # These should be the contracts for: yVault zap in, yVault zap out, Pickle jar zap in
+    # In production these should be the contracts for: yVault zap in, yVault zap out, Pickle jar zap in
     implementation.setIsZapperContract(zap_in_contract, True, {"from": owner})
     assert implementation.isZapperContract(zap_in_contract) == True
 
