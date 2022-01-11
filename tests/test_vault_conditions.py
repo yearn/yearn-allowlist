@@ -66,7 +66,7 @@ def test_vault_token_approval(allowlist_factory, allowlist, owner, origin_name, 
     assert allowed == False
 
 
-# Description: Approval of the yearn zap in contract
+# Description: Zapping into a yVault
 # Signature: "zapInContract.ZapIn(address,uint256,address,address,bool,uint256,address,address,bytes,address,bool)"
 # Target: Must be the zap in contract, which is 0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E
 # Param 2: Must be a valid vault address
