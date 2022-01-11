@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
+import "./Utilities/Owner.sol";
 
 /*******************************************************
  *                      Interfaces
@@ -19,11 +20,16 @@ interface IVault {
 /*******************************************************
  *                      Implementation
  *******************************************************/
-contract YearnAllowlistImplementation {
+contract YearnAllowlistImplementation is Ownable {
   address public registryAddress;
+  mapping(address => bool) public isZapperContract;
 
   constructor(address _registryAddress) {
     registryAddress = _registryAddress;
+  }
+
+  function setIsZapperContract(address contractAddress, bool _isZapperContract) external onlyOwner {
+    isZapperContract[contractAddress] = _isZapperContract;
   }
 
   /**
