@@ -28,7 +28,7 @@ def vault_token(vault):
 # Signature: "token.approve(address,uint256)"
 # Target: Must be a valid vault token
 # Param 0: Must be a valid vault address
-def test_vault_token_approval(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token):
+def test_token_approval_for_vault(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token):
     # Add condition
     condition = (
         "approve",
@@ -68,12 +68,12 @@ def test_vault_token_approval(allowlist_factory, allowlist, owner, origin_name, 
 #   - zap_in_yearn_address: "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E"
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 #   - another address on the custom 
-def test_vault_token_zap_approval(allowlist_factory, allowlist, owner, network_variables, origin_name, implementation, vault, vault_token):
+def test_token_approval_for_zap(allowlist_factory, allowlist, owner, network_variables, origin_name, implementation, vault_token):
     # This test is not supported on all networks
     test_supported = "vault_zap_in_addresses" in network_variables
     if (test_supported == False):
         return
-    zap_contracts_addresses = network_variables["vault_zap_in_addresses"]
+    zap_in_contracts_addresses = network_variables["vault_zap_in_addresses"]
 
     # Add condition
     condition = (
@@ -87,21 +87,163 @@ def test_vault_token_zap_approval(allowlist_factory, allowlist, owner, network_v
     )
     allowlist.addCondition(condition, {"from": owner})
 
-    # Test invalid param (before updating allowlist) - token.approve(zap_contracts_addresses[0], UINT256_MAX)
-    data = vault_token.approve.encode_input(zap_contracts_addresses[0], MAX_UINT256)
+    # Test invalid param (before updating allowlist) - token.approve(zap_in_contracts_addresses[0], UINT256_MAX)
+    data = vault_token.approve.encode_input(zap_in_contracts_addresses[0], MAX_UINT256)
     allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
     assert allowed == False
 
     # Set zapper contract addresses
-    for zap_contract_address in zap_contracts_addresses:
-        implementation.setIsZapInContract(zap_contract_address, True, {"from": owner})
-        assert implementation.isZapInContract(zap_contract_address) == True
+    for zap_in_contract_address in zap_in_contracts_addresses:
+        implementation.setIsZapInContract(zap_in_contract_address, True, {"from": owner})
+        assert implementation.isZapInContract(zap_in_contract_address) == True
 
-    # Test valid param (after adding to allowlist) - token.approve(zap_contracts_addresses[i], UINT256_MAX)
-    for zap_contract_address in zap_contracts_addresses:
-        data = vault_token.approve.encode_input(zap_contract_address, MAX_UINT256)
+    # Test valid param (after adding to allowlist) - token.approve(zap_in_contracts_addresses[i], UINT256_MAX)
+    for zap_in_contract_address in zap_in_contracts_addresses:
+        data = vault_token.approve.encode_input(zap_in_contract_address, MAX_UINT256)
         allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
         assert allowed == True
+
+##############################################################
+# Target: Vaults
+##############################################################
+
+# Vault deposits
+
+# Description: Vault deposit
+# Signature: "vault.deposit(uint256)"
+# Target: Must be a valid vault address
+def test_vault_deposit(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token):
+    # Test deposit before adding condition - vault.deposit(amount)
+    data = vault.deposit.encode_input(MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == False
+    
+    # Add condition
+    condition = (
+        "deposit",
+        ["uint256"],
+        [
+            ["target", "isVault"],
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
+    
+    # Test valid calldata - vault.deposit(amount)
+    data = vault.deposit.encode_input(MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == True
+    
+# Vault withdrawals
+
+# Signature: "vault.withdraw(uint256)"
+# Target: Must be a valid vault address
+def test_vault_withdraw(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token):
+    # Test withdraw before adding condition - vault.withdraw(amount)
+    data = vault.withdraw.encode_input(MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == False
+    
+    # Add condition
+    condition = (
+        "withdraw",
+        ["uint256"],
+        [
+            ["target", "isVault"],
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
+    
+    # Test valid calldata - vault.withdraw(amount)
+    data = vault.withdraw.encode_input(MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == True
+
+# Vault approvals
+
+# Description: Vault approval
+# Signature: "vault.approve(address,uint256)"
+# Target: Must be a valid vault address
+# Param 0: Must be one of the following (mainnet):
+#   - zapOut: "0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c"
+#   - Migrator contract(s)?
+#     - trustedVaultMigrator: "0x1824df8D751704FA10FA371d62A37f9B8772ab90"
+#     - triCryptoVaultMigrator: "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
+def test_vault_approval(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token, network_variables):
+    # Zap outs
+    if "vault_zap_out_addresses" in network_variables:
+        zap_out_contracts_addresses = network_variables["vault_zap_out_addresses"]
+
+        # Zap out condition
+        condition = (
+            "approve",
+            ["address", "uint256"],
+            [
+                ["target", "isVault"], 
+                ["param", "isZapOutContract", "0"]
+            ],
+            implementation
+        )
+        allowlist.addCondition(condition, {"from": owner})
+
+        # Set zap out contracts        
+        for zap_out_contract_address in zap_out_contracts_addresses:
+            implementation.setIsZapOutContract(zap_out_contract_address, True, {"from": owner})
+            assert implementation.isZapOutContract(zap_out_contract_address) == True
+
+        # Test valid calldata - vault.approve(zap_out, UINT256_MAX)
+        data = vault.approve.encode_input(zap_out_contracts_addresses[0], MAX_UINT256)
+        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+        assert allowed == True
+
+        # Test invalid target - invalid.approve(zap_out, UINT256_MAX)
+        data = vault.approve.encode_input(zap_out_contracts_addresses[0], MAX_UINT256)
+        allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
+        assert allowed == False
+
+        # Test invalid param - vault.approve(not_zap, UINT256_MAX)
+        not_zap = vault
+        data = vault.approve.encode_input(not_zap, MAX_UINT256)
+        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+        assert allowed == False
+
+    # Migrations
+    if "migrator_addresses" in network_variables:
+        migrator_addresses = network_variables["migrator_addresses"]
+
+        # Migrator condition
+        condition = (
+            "approve",
+            ["address", "uint256"],
+            [
+                ["target", "isVault"], 
+                ["param", "isMigratorContract", "0"]
+            ],
+            implementation
+        )
+        allowlist.addCondition(condition, {"from": owner})
+        
+        # Set migrator contracts        
+        for migrator_address in migrator_addresses:
+            implementation.setIsMigratorContract(migrator_address, True, {"from": owner})
+            assert implementation.isMigratorContract(migrator_address) == True
+
+        # Test valid calldata - vault.approve(migrator, UINT256_MAX)
+        data = vault.approve.encode_input(migrator_addresses[0], MAX_UINT256)
+        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+        assert allowed == True
+
+        # Test invalid target - invalid.approve(migrator, UINT256_MAX)
+        data = vault.approve.encode_input(migrator_addresses[0], MAX_UINT256)
+        allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
+        assert allowed == False
+
+        # Test invalid param - vault.approve(not_migrator, UINT256_MAX)
+        not_migrator = vault
+        data = vault.approve.encode_input(not_migrator, MAX_UINT256)
+        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+        assert allowed == False
 
 
 ##############################################################
@@ -114,18 +256,18 @@ def test_vault_token_zap_approval(allowlist_factory, allowlist, owner, network_v
 #   - zap_in_yearn_address: "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E"
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 # Param 2: Must be a valid vault address
-def test_vault_zap_in(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
+def test_zap_in_to_vault(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
     # This test is not supported on all networks
     test_supported = "vault_zap_in_addresses" in network_variables
     if (test_supported == False):
         return
-    zap_contracts_addresses = network_variables["vault_zap_in_addresses"]
+    zap_in_contracts_addresses = network_variables["vault_zap_in_addresses"]
 
     # We need to manually set the addresses which are yearn zapper contracts on the implementation.
     # In production these should be the contracts for: yVault zap in, Pickle jar zap in
-    for zap_contract_address in zap_contracts_addresses:
-        implementation.setIsZapInContract(zap_contract_address, True, {"from": owner})
-        assert implementation.isZapInContract(zap_contract_address) == True
+    for zap_in_contract_address in zap_in_contracts_addresses:
+        implementation.setIsZapInContract(zap_in_contract_address, True, {"from": owner})
+        assert implementation.isZapInContract(zap_in_contract_address) == True
 
     # Add condition
     condition = (
@@ -140,7 +282,7 @@ def test_vault_zap_in(allowlist_factory, allowlist, owner, origin_name, implemen
     allowlist.addCondition(condition, {"from": owner})
 
     # Set sample zap in contract for testing
-    zap_in_contract = Contract(zap_contracts_addresses[0])
+    zap_in_contract = Contract(zap_in_contracts_addresses[0])
 
     # Convenience function for generating the calldata inputted to the zap in contract.
     # Default parameters are for a zap into a valid vault

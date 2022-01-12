@@ -32,6 +32,7 @@ contract YearnAllowlistImplementation {
   string public constant protocolOriginName = "yearn.finance";
   mapping(address => bool) public isZapInContract;
   mapping(address => bool) public isZapOutContract;
+  mapping(address => bool) public isMigratorContract;
 
   constructor(address _registryAddress, address _allowlistFactoryAddress) {
     registryAddress = _registryAddress;
@@ -50,6 +51,13 @@ contract YearnAllowlistImplementation {
     onlyOwner
   {
     isZapOutContract[spenderAddress] = allowed;
+  }
+
+  function setIsMigratorContract(address spenderAddress, bool allowed)
+    public
+    onlyOwner
+  {
+    isMigratorContract[spenderAddress] = allowed;
   }
 
   modifier onlyOwner() {
