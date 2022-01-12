@@ -256,7 +256,7 @@ def test_vault_approval(allowlist_factory, allowlist, owner, origin_name, implem
 #   - zap_in_yearn_address: "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E"
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 # Param 2: Must be a valid vault address
-def test_zap_in_to_vault(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
+def test_zap_into_vault(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
     # This test is not supported on all networks
     test_supported = "vault_zap_in_addresses" in network_variables
     if (test_supported == False):
@@ -299,6 +299,78 @@ def test_zap_in_to_vault(allowlist_factory, allowlist, owner, origin_name, imple
             to_bytes('0x0'), 
             ZERO_ADDRESS, 
             False
+        )
+    
+    # Test valid calldata - zapping into a valid vault
+    data = makeZapInData()
+    allowed = allowlist_factory.validateCalldata(origin_name, zap_in_contract, data)
+    assert allowed == True
+    
+    # Test invalid param - zapping into a vault which isn't valid
+    data = makeZapInData(vault=ZERO_ADDRESS)
+    allowed = allowlist_factory.validateCalldata(origin_name, zap_in_contract, data)
+    assert allowed == False
+    
+    # Test invalid target - trying to zap in using a contract that is not the zap in contract
+    data = makeZapInData()
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == False
+
+    # Disable the implementation recognizing that the zap_in_contract is a valid zapper address
+    implementation.setIsZapInContract(zap_in_contract, False, {"from": owner})
+    assert implementation.isZapInContract(zap_in_contract) == False
+
+    # Test that the target validation fails, as the zapper contract address is no longer recognized by the implementation 
+    data = makeZapInData()
+    allowed = allowlist_factory.validateCalldata(origin_name, zap_in_contract, data)
+    assert allowed == False
+
+
+# Description: Zapping into a Pickle jar
+# Signature: "zapInContract.ZapIn(address,uint256,address,uint256,address,address,bytes,address)"
+# Target 0: Must be a valid zap in contract (mainnet):
+#   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
+# Param 2: Must be a valid vault address
+def test_zap_into_pickle_jar(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
+    # This test is not supported on all networks
+    test_supported = "pickle_zap_in_addresses" in network_variables
+    if (test_supported == False):
+        return
+    zap_in_contracts_addresses = network_variables["pickle_zap_in_addresses"]
+
+    # We need to manually set the addresses which are yearn zapper contracts on the implementation.
+    # In production these should be the contracts for zapping into a Pickle jar
+    for zap_in_contract_address in zap_in_contracts_addresses:
+        implementation.setIsZapInContract(zap_in_contract_address, True, {"from": owner})
+        assert implementation.isZapInContract(zap_in_contract_address) == True
+
+    # Add condition
+    condition = (
+        "ZapIn",
+        ["address", "uint256", "address", "uint256", "address", "address", "bytes", "address"],
+        [
+            ["target", "isZapInContract"], 
+            ["param", "isVault", "2"]
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
+
+    # Set sample zap in contract for testing
+    zap_in_contract = Contract(zap_in_contracts_addresses[0])
+
+    # Convenience function for generating the calldata inputted to the zap in contract.
+    # Default parameters are for a zap into a valid vault
+    def makeZapInData(zap_in_contract=zap_in_contract, vault=vault):
+        return zap_in_contract.ZapIn.encode_input(
+            ZERO_ADDRESS,
+            MAX_UINT256,
+            vault,
+            MAX_UINT256,
+            ZERO_ADDRESS,
+            ZERO_ADDRESS,
+            to_bytes('0x0'),
+            ZERO_ADDRESS
         )
     
     # Test valid calldata - zapping into a valid vault
