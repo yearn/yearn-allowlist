@@ -16,6 +16,10 @@ interface IVault {
   function token() external view returns (address);
 }
 
+interface IUnitroller {
+    function getAllMarkets() external view returns (address[] memory);
+}
+
 interface IAllowlistFactory {
   function protocolOwnerAddressByOriginName(string memory originName)
     external
@@ -28,14 +32,16 @@ interface IAllowlistFactory {
  *******************************************************/
 contract YearnAllowlistImplementation {
   address public registryAddress;
+  address public comptrollerAddress;
   address public allowlistFactoryAddress;
   string public constant protocolOriginName = "yearn.finance";
   mapping(address => bool) public isZapInContract;
   mapping(address => bool) public isZapOutContract;
   mapping(address => bool) public isMigratorContract;
 
-  constructor(address _registryAddress, address _allowlistFactoryAddress) {
+  constructor(address _registryAddress, address _comptrollerAddress, address _allowlistFactoryAddress) {
     registryAddress = _registryAddress;
+    comptrollerAddress = _comptrollerAddress;
     allowlistFactoryAddress = _allowlistFactoryAddress;
   }
 
@@ -103,6 +109,18 @@ contract YearnAllowlistImplementation {
     for (uint256 vaultIdx; vaultIdx < numVaults; vaultIdx++) {
       address currentVaultAddress = registry().vaults(tokenAddress, vaultIdx);
       if (currentVaultAddress == vaultAddress) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function isIronBankMarket(address token) public view returns (bool) {
+    address[] memory markets = IUnitroller(comptrollerAddress).getAllMarkets();
+    uint256 numMarkets = markets.length;
+    for (uint256 marketIdx; marketIdx < numMarkets; marketIdx++) {
+      address market = markets[marketIdx];
+      if (market == token) {
         return true;
       }
     }
