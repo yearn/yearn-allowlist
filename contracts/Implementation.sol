@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
-import "./Utilities/Owner.sol";
 
 /*******************************************************
  *                      Interfaces
@@ -17,19 +16,53 @@ interface IVault {
   function token() external view returns (address);
 }
 
+interface IAllowlistFactory {
+  function protocolOwnerAddressByOriginName(string memory originName)
+    external
+    view
+    returns (address ownerAddress);
+}
+
 /*******************************************************
  *                      Implementation
  *******************************************************/
-contract YearnAllowlistImplementation is Ownable {
+contract YearnAllowlistImplementation {
   address public registryAddress;
-  mapping(address => bool) public isZapperContract;
+  address public allowlistFactoryAddress;
+  string public constant protocolOriginName = "yearn.finance";
+  mapping(address => bool) public isZapInContract;
+  mapping(address => bool) public isZapOutContract;
 
-  constructor(address _registryAddress) {
+  constructor(address _registryAddress, address _allowlistFactoryAddress) {
     registryAddress = _registryAddress;
+    allowlistFactoryAddress = _allowlistFactoryAddress;
   }
 
-  function setIsZapperContract(address contractAddress, bool _isZapperContract) external onlyOwner {
-    isZapperContract[contractAddress] = _isZapperContract;
+  function setIsZapInContract(address spenderAddress, bool allowed)
+    public
+    onlyOwner
+  {
+    isZapInContract[spenderAddress] = allowed;
+  }
+
+  function setIsZapOutContract(address spenderAddress, bool allowed)
+    public
+    onlyOwner
+  {
+    isZapOutContract[spenderAddress] = allowed;
+  }
+
+  modifier onlyOwner() {
+    require(
+      msg.sender == ownerAddress() || msg.sender == address(0),
+      "Caller is not the protocol owner"
+    );
+    _;
+  }
+
+  function ownerAddress() public view returns (address protcolOwnerAddress) {
+    protcolOwnerAddress = IAllowlistFactory(allowlistFactoryAddress)
+      .protocolOwnerAddressByOriginName(protocolOriginName);
   }
 
   /**
@@ -37,7 +70,11 @@ contract YearnAllowlistImplementation is Ownable {
    * @param tokenAddress The vault token address to test
    * @return Returns true if the valid address is valid and false if not
    */
-  function isVaultToken(address tokenAddress) public view returns (bool) {
+  function isVaultUnderlyingToken(address tokenAddress)
+    public
+    view
+    returns (bool)
+  {
     return registry().isRegistered(tokenAddress);
   }
 

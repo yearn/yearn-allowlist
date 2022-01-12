@@ -2,7 +2,11 @@
   "originName": "yearn.finance",
   "networkVariables": {
     "1": {
-      "registry_address": "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804"
+      "registry_address": "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
+      "vault_zap_in_addresses": [
+        "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E",
+        "0xc695f73c1862e050059367B2E64489E66c525983"
+      ]
     },
     "250": {
       "registry_address": "0x727fe1759430df13655ddb0731dE0D0FDE929b04"
