@@ -324,3 +324,76 @@ def test_zap_in_to_vault(allowlist_factory, allowlist, owner, origin_name, imple
     data = makeZapInData()
     allowed = allowlist_factory.validateCalldata(origin_name, zap_in_contract, data)
     assert allowed == False
+
+
+# Description: Zapping out of a yVault
+# Signature: "zapOutContract.ZapOut(address,uint256,address,bool,uint256,address,bytes,address,bool)"
+# Target 0: Must be a valid zap out contract (mainnet):
+#   - zap_out_yearn_address: "0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c"
+# Param 0: Must be a valid vault address
+def test_zap_out_of_vault(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
+    # This test is not supported on all networks
+    test_supported = "vault_zap_out_addresses" in network_variables
+    if (test_supported == False):
+        return
+    zap_out_contracts_addresses = network_variables["vault_zap_out_addresses"]
+
+    # We need to manually set the addresses which are yearn zapper contracts on the implementation.
+    # In production these should be the yVault zap out contract
+    for zap_out_contract_address in zap_out_contracts_addresses:
+        implementation.setIsZapOutContract(zap_out_contract_address, True, {"from": owner})
+        assert implementation.isZapOutContract(zap_out_contract_address) == True
+
+    # Add condition
+    condition = (
+        "ZapOut",
+        ["address", "uint256", "address", "bool", "uint256", "address", "bytes", "address", "bool"],
+        [
+            ["target", "isZapOutContract"], 
+            ["param", "isVault", "0"]
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
+
+    # Set sample zap in contract for testing
+    zap_out_contract = Contract(zap_out_contracts_addresses[0])
+
+    # Convenience function for generating the calldata inputted to the zap out contract.
+    # Default parameters are for a zap out of a valid vault
+    def makeZapOutData(zap_out_contract=zap_out_contract, vault=vault):
+        return zap_out_contract.ZapOut.encode_input(
+            vault,
+            MAX_UINT256,
+            ZERO_ADDRESS,
+            False,
+            MAX_UINT256,
+            ZERO_ADDRESS,
+            to_bytes('0x0'),
+            ZERO_ADDRESS,
+            False
+        )
+    
+    # Test valid calldata - zapping out of a valid vault
+    data = makeZapOutData()
+    allowed = allowlist_factory.validateCalldata(origin_name, zap_out_contract, data)
+    assert allowed == True
+    
+    # Test invalid param - zapping out of a vault which isn't valid
+    data = makeZapOutData(vault=ZERO_ADDRESS)
+    allowed = allowlist_factory.validateCalldata(origin_name, zap_out_contract, data)
+    assert allowed == False
+    
+    # Test invalid target - trying to zap out using a contract that is not the zap out contract
+    data = makeZapOutData()
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == False
+
+    # Disable the implementation recognizing that the zap_out_contract is a valid zapper address
+    implementation.setIsZapOutContract(zap_out_contract, False, {"from": owner})
+    assert implementation.isZapOutContract(zap_out_contract) == False
+
+    # Test that the target validation fails, as the zapper contract address is no longer recognized by the implementation 
+    data = makeZapOutData()
+    allowed = allowlist_factory.validateCalldata(origin_name, zap_out_contract, data)
+    assert allowed == False
