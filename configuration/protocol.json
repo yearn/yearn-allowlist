@@ -6,6 +6,11 @@
       "vault_zap_in_addresses": [
         "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E",
         "0xc695f73c1862e050059367B2E64489E66c525983"
+      ],
+      "vault_zap_out_addresses": ["0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c"],
+      "migrator_addresses": [
+        "0x1824df8D751704FA10FA371d62A37f9B8772ab90",
+        "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
       ]
     },
     "250": {
