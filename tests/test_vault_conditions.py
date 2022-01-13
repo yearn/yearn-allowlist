@@ -171,7 +171,7 @@ def test_vault_withdraw(allowlist_factory, allowlist, owner, origin_name, implem
 #     - trustedVaultMigrator: "0x1824df8D751704FA10FA371d62A37f9B8772ab90"
 #     - triCryptoVaultMigrator: "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
 def test_vault_approval(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token, network_variables):
-    # Zap outs
+    # Zap out approvals
     if "vault_zap_out_addresses" in network_variables:
         zap_out_contracts_addresses = network_variables["vault_zap_out_addresses"]
 
@@ -208,7 +208,7 @@ def test_vault_approval(allowlist_factory, allowlist, owner, origin_name, implem
         allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
         assert allowed == False
 
-    # Migrations
+    # Migration approvals
     if "migrator_addresses" in network_variables:
         migrator_addresses = network_variables["migrator_addresses"]
 
@@ -324,7 +324,6 @@ def test_zap_in_to_vault(allowlist_factory, allowlist, owner, origin_name, imple
     data = makeZapInData()
     allowed = allowlist_factory.validateCalldata(origin_name, zap_in_contract, data)
     assert allowed == False
-
 
 # Description: Zapping out of a yVault
 # Signature: "zapOutContract.ZapOut(address,uint256,address,bool,uint256,address,bytes,address,bool)"
