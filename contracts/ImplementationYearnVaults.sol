@@ -105,9 +105,9 @@ contract YearnVaultsAllowlistImplementation {
   }
 
   /**
-   * @notice Set whether or not a contract is a valid zap out contract
-   * @param contractAddress Address of zap out contract
-   * @param allowed If true contract is a valid zap out contract, if false, contract is not
+   * @notice Set whether or not a contract is a valid pickle jar
+   * @param contractAddress Address of pickle jar contract
+   * @param allowed If true contract is a valid pickle jar used by yearn, if false, contract is not
    */
   function setIsPickleJarContract(address contractAddress, bool allowed)
     public

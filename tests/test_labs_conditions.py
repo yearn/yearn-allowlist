@@ -5,6 +5,9 @@ MAX_UINT256 = 2**256-1
 
 @pytest.fixture
 def implementation(owner, YearnLabsAllowlistImplementation):
+    if chain.id != 1:
+        pytest.skip('This test is not supported on chain ${chain.id}')
+
     return YearnLabsAllowlistImplementation.deploy({"from": owner})
 
 ##############################################################
@@ -17,12 +20,6 @@ def implementation(owner, YearnLabsAllowlistImplementation):
 # Signature: "pickle_jar.deposit(uint256)"
 # Target: Must be the yveCRV/ETH SLP pickle jar
 def test_pickle_jar_deposit(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
-    # This test is not supported on all networks
-    test_supported = chain.id == 1
-    if (test_supported == False):
-        return
-
-    # Fetch pickle jar
     pickle_jar = Contract(network_variables["pickle_jar_address"])
 
     # Test valid calldata before adding condition - pickle_jar.deposit(UINT256_MAX)
@@ -56,11 +53,6 @@ def test_pickle_jar_deposit(allowlist_factory, allowlist, owner, origin_name, im
 # Signature: "pickle_jar.deposit(uint256)"
 # Target: Must be the yveCRV/ETH SLP pickle jar
 def test_pickle_gauge_stake(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
-    # This test is not supported on all networks
-    test_supported = chain.id == 1
-    if (test_supported == False):
-        return
-
     # Fetch pickle gauge
     pickle_gauge = Contract(network_variables["pickle_gauge_address"])
 
@@ -95,11 +87,6 @@ def test_pickle_gauge_stake(allowlist_factory, allowlist, owner, origin_name, im
 # Signature: "yvecrv.deposit(uint256)"
 # Target: Must be yveCRV-DAO yVault
 def test_yvecrv_lock(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
-    # This test is not supported on all networks
-    test_supported = chain.id == 1
-    if (test_supported == False):
-        return
-
     # Fetch yveCRV-DAO vault
     yvecrv_vault = Contract(network_variables["yvecrv_vault_address"])
 
@@ -130,11 +117,6 @@ def test_yvecrv_lock(allowlist_factory, allowlist, owner, origin_name, implement
 # Signature: "yvecrv.claim()"
 # Target: Must be yveCRV-DAO yVault
 def test_yvecrv_claim(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
-    # This test is not supported on all networks
-    test_supported = chain.id == 1
-    if (test_supported == False):
-        return
-
     # Fetch yveCRV-DAO vault
     yvecrv_vault = Contract(network_variables["yvecrv_vault_address"])
 
@@ -169,11 +151,6 @@ def test_yvecrv_claim(allowlist_factory, allowlist, owner, origin_name, implemen
 # Signature: "threecrv_zap.zap()"
 # Target: Must be yearn 3CRV yveCRV-DAO zap contract
 def test_threecrv_yvecrv_zap(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
-    # This test is not supported on all networks
-    test_supported = chain.id == 1
-    if (test_supported == False):
-        return
-
     # Fetch 3CRV zap contract
     threecrv_zap = Contract(network_variables["threecrv_zap_address"])
 

@@ -74,13 +74,11 @@ def test_token_approval_for_vault(allowlist_factory, allowlist, owner, origin_na
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 #   - another address on the custom 
 def test_token_approval_for_zap(allowlist_factory, allowlist, owner, network_variables, origin_name, implementation, vault_token):
-    # This test is not supported on all networks
-    test_supported = "zap_in_to_vault_address" in network_variables
-    if (chain.id == 1):
-        assert test_supported == True
-    if (test_supported == False):
-        return
-    zap_in_contract = Contract(network_variables["zap_in_to_vault_address"])
+    zap_in_to_vault_address_key = "zap_in_to_vault_address"
+    if zap_in_to_vault_address_key not in network_variables:
+        pytest.skip("no zap in address on this network")
+
+    zap_in_contract = Contract(network_variables[zap_in_to_vault_address_key])
 
     # Add condition
     condition = (
@@ -177,51 +175,44 @@ def test_vault_withdraw(allowlist_factory, allowlist, owner, origin_name, implem
 #     - triCryptoVaultMigrator: "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
 def test_vault_zap_out_approval(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token, network_variables):
     # Zap out approvals
-    zap_out_of_vault_address = "zap_out_of_vault_address"
-    test_supported = zap_out_of_vault_address in network_variables
-    if (chain.id == 1):
-        assert test_supported == True
+    zap_out_of_vault_address_key = "zap_out_of_vault_address"
+    if zap_out_of_vault_address_key not in network_variables:
+        pytest.skip("no zap out address on this network")
 
-    if test_supported:
-        zap_out_contract = Contract(network_variables[zap_out_of_vault_address])
+    zap_out_contract = Contract(network_variables[zap_out_of_vault_address_key])
 
-        # Zap out condition
-        condition = (
-            "approve",
-            ["address", "uint256"],
-            [
-                ["target", "isVault"], 
-                ["param", "isZapOutContract", "0"]
-            ],
-            implementation
-        )
-        allowlist.addCondition(condition, {"from": owner})
+    # Zap out condition
+    condition = (
+        "approve",
+        ["address", "uint256"],
+        [
+            ["target", "isVault"], 
+            ["param", "isZapOutContract", "0"]
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
 
-        # Set zap out contract
-        assert implementation.isZapOutContract(zap_out_contract) == False
-        implementation.setIsZapOutContract(zap_out_contract, True, {"from": owner})
-        assert implementation.isZapOutContract(zap_out_contract) == True
+    # Set zap out contract
+    assert implementation.isZapOutContract(zap_out_contract) == False
+    implementation.setIsZapOutContract(zap_out_contract, True, {"from": owner})
+    assert implementation.isZapOutContract(zap_out_contract) == True
 
-        # Test valid calldata - vault.approve(zap_out, UINT256_MAX)
-        data = vault.approve.encode_input(zap_out_contract, MAX_UINT256)
-        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
-        assert allowed == True
+    # Test valid calldata - vault.approve(zap_out, UINT256_MAX)
+    data = vault.approve.encode_input(zap_out_contract, MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == True
 
-        # Test invalid target - invalid.approve(zap_out, UINT256_MAX)
-        data = vault.approve.encode_input(zap_out_contract, MAX_UINT256)
-        allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
-        assert allowed == False
+    # Test invalid target - invalid.approve(zap_out, UINT256_MAX)
+    data = vault.approve.encode_input(zap_out_contract, MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
+    assert allowed == False
 
-        # Test invalid param - vault.approve(not_zap, UINT256_MAX)
-        not_zap = vault
-        data = vault.approve.encode_input(not_zap, MAX_UINT256)
-        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
-        assert allowed == False
-
-    migrator_address_standard = "migrator_address_standard"
-    test_supported = migrator_address_standard in network_variables
-    if (chain.id == 1):
-        assert test_supported == True
+    # Test invalid param - vault.approve(not_zap, UINT256_MAX)
+    not_zap = vault
+    data = vault.approve.encode_input(not_zap, MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == False
 
 # Description: Vault zap out approval
 # Signature: "vault.approve(address,uint256)"
@@ -231,46 +222,43 @@ def test_vault_zap_out_approval(allowlist_factory, allowlist, owner, origin_name
 #   - triCryptoVaultMigrator: "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
 def test_vault_migrator_approval(allowlist_factory, allowlist, owner, origin_name, implementation, vault, vault_token, network_variables):
     # Vault migrator approvals
-    migrator_address_standard = "migrator_address_standard"
-    test_supported = migrator_address_standard in network_variables
-    if (chain.id == 1):
-        assert test_supported == True
+    migrator_address_standard_key = "migrator_address_standard"
+    if migrator_address_standard_key not in network_variables:
+        pytest.skip("no standard migrator address on this network")
 
-    # Migration approvals
-    if test_supported:
-        migrator_address = network_variables[migrator_address_standard]
+    migrator_address = network_variables[migrator_address_standard_key]
 
-        # Migrator condition
-        condition = (
-            "approve",
-            ["address", "uint256"],
-            [
-                ["target", "isVault"], 
-                ["param", "isMigratorContract", "0"]
-            ],
-            implementation
-        )
-        allowlist.addCondition(condition, {"from": owner})
-        
-        # Set migrator contract
-        implementation.setIsMigratorContract(migrator_address, True, {"from": owner})
-        assert implementation.isMigratorContract(migrator_address) == True
+    # Migrator condition
+    condition = (
+        "approve",
+        ["address", "uint256"],
+        [
+            ["target", "isVault"], 
+            ["param", "isMigratorContract", "0"]
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
+    
+    # Set migrator contract
+    implementation.setIsMigratorContract(migrator_address, True, {"from": owner})
+    assert implementation.isMigratorContract(migrator_address) == True
 
-        # Test valid calldata - vault.approve(migrator, UINT256_MAX)
-        data = vault.approve.encode_input(migrator_address, MAX_UINT256)
-        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
-        assert allowed == True
+    # Test valid calldata - vault.approve(migrator, UINT256_MAX)
+    data = vault.approve.encode_input(migrator_address, MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == True
 
-        # Test invalid target - invalid.approve(migrator, UINT256_MAX)
-        data = vault.approve.encode_input(migrator_address, MAX_UINT256)
-        allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
-        assert allowed == False
+    # Test invalid target - invalid.approve(migrator, UINT256_MAX)
+    data = vault.approve.encode_input(migrator_address, MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault_token, data)
+    assert allowed == False
 
-        # Test invalid param - vault.approve(not_migrator, UINT256_MAX)
-        not_migrator = vault
-        data = vault.approve.encode_input(not_migrator, MAX_UINT256)
-        allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
-        assert allowed == False
+    # Test invalid param - vault.approve(not_migrator, UINT256_MAX)
+    not_migrator = vault
+    data = vault.approve.encode_input(not_migrator, MAX_UINT256)
+    allowed = allowlist_factory.validateCalldata(origin_name, vault, data)
+    assert allowed == False
 
 
 ##############################################################
@@ -285,12 +273,11 @@ def test_vault_migrator_approval(allowlist_factory, allowlist, owner, origin_nam
 #   - zap_in_yearn_address: "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E"
 # Param 2: Must be a valid vault address
 def test_zap_in_to_vault(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
-    # This test is not supported on all networks
-    zap_in_to_vault_address = "zap_in_to_vault_address"
-    test_supported = zap_in_to_vault_address in network_variables
-    if (test_supported == False):
-        return
-    zap_in_contract = Contract(network_variables[zap_in_to_vault_address])
+    zap_in_to_vault_address_key = "zap_in_to_vault_address"
+    if zap_in_to_vault_address_key not in network_variables:
+        pytest.skip("no zap in address on this network")
+
+    zap_in_contract = Contract(network_variables[zap_in_to_vault_address_key])
 
     # Set isZapInContract in implementation
     assert implementation.isZapInContract(zap_in_contract) == False
@@ -358,14 +345,11 @@ def test_zap_in_to_vault(allowlist_factory, allowlist, owner, origin_name, imple
 #   - zap_out_yearn_address: "0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c"
 # Param 0: Must be a valid vault address
 def test_zap_out_of_vault(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
-    # This test is not supported on all networks
-    zap_out_of_vault_address = "zap_out_of_vault_address"
-    test_supported = zap_out_of_vault_address in network_variables
-    if (chain.id == 1):
-        assert test_supported == True
-    if (test_supported == False):
-        return
-    zap_out_contract = Contract(network_variables[zap_out_of_vault_address])
+    zap_out_of_vault_address_key = "zap_out_of_vault_address"
+    if zap_out_of_vault_address_key not in network_variables:
+        pytest.skip("no zap out address on this network")
+
+    zap_out_contract = Contract(network_variables[zap_out_of_vault_address_key])
 
     # Set isZapOutContract in implementation
     assert implementation.isZapOutContract(zap_out_contract) == False
@@ -431,15 +415,12 @@ def test_zap_out_of_vault(allowlist_factory, allowlist, owner, origin_name, impl
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 # Param 2: Must be the yvBOOST/ETH SLP pickle jar
 def test_zap_in_to_pickle_jar(allowlist_factory, allowlist, owner, origin_name, implementation, vault, network_variables):
-    # This test is not supported on all networks
-    zap_in_to_pickle_address = "zap_in_to_pickle_address"
+    zap_in_to_pickle_address_key = "zap_in_to_pickle_address"
+    if zap_in_to_pickle_address_key not in network_variables:
+        pytest.skip("no pickle jar zap in address on this network")
+        
     pickle_jar_address = "pickle_jar_address"
-    test_supported = zap_in_to_pickle_address in network_variables and pickle_jar_address in network_variables
-    if (chain.id == 1):
-        assert test_supported == True
-    if (test_supported == False):
-        return
-    zap_in_contract = Contract(network_variables[zap_in_to_pickle_address])
+    zap_in_contract = Contract(network_variables[zap_in_to_pickle_address_key])
     pickle_jar_contract = Contract(network_variables[pickle_jar_address])
 
     # Set isZapInContract for implementation
@@ -512,36 +493,39 @@ def test_zap_in_to_pickle_jar(allowlist_factory, allowlist, owner, origin_name, 
 # Signature: "tricrypto_migrator.migrate_to_new_vault()"
 # Target: Must be valid migrator
 def test_migrate_tricrypto(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
-    if "migrator_address_tricrypto" in network_variables:
-        tricrypto_migrator = Contract(network_variables["migrator_address_tricrypto"])
-        implementation.setIsMigratorContract(tricrypto_migrator, True, {"from": owner})
-        
-        # Test valid calldata before adding condition - tricrypto_migrator.migrate_to_new_vault()
-        data = tricrypto_migrator.migrate_to_new_vault.encode_input()
-        allowed = allowlist_factory.validateCalldata(origin_name, tricrypto_migrator, data)
-        assert allowed == False
+    migrator_address_tricrypto_key = "migrator_address_tricrypto"
+    if migrator_address_tricrypto_key not in network_variables:
+        pytest.skip("no tricrypto migrator address on this network")
 
-        # Add condition
-        condition = (
-            "migrate_to_new_vault",
-            [],
-            [
-                ["target", "isMigratorContract"]
-            ],
-            implementation
-        )
-        allowlist.addCondition(condition, {"from": owner})
-        
-        # Test valid calldata after adding condition - migrator.migrate_to_new_vault()
-        data = tricrypto_migrator.migrate_to_new_vault.encode_input()
-        allowed = allowlist_factory.validateCalldata(origin_name, tricrypto_migrator, data)
-        assert allowed == True
-        
-        # Test valid calldata after removing migration contract - migrator.migrate_to_new_vault()
-        implementation.setIsMigratorContract(tricrypto_migrator, False, {"from": owner})
-        data = tricrypto_migrator.migrate_to_new_vault.encode_input()
-        allowed = allowlist_factory.validateCalldata(origin_name, tricrypto_migrator, data)
-        assert allowed == False
+    tricrypto_migrator = Contract(network_variables[migrator_address_tricrypto_key])
+    implementation.setIsMigratorContract(tricrypto_migrator, True, {"from": owner})
+    
+    # Test valid calldata before adding condition - tricrypto_migrator.migrate_to_new_vault()
+    data = tricrypto_migrator.migrate_to_new_vault.encode_input()
+    allowed = allowlist_factory.validateCalldata(origin_name, tricrypto_migrator, data)
+    assert allowed == False
+
+    # Add condition
+    condition = (
+        "migrate_to_new_vault",
+        [],
+        [
+            ["target", "isMigratorContract"]
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
+    
+    # Test valid calldata after adding condition - migrator.migrate_to_new_vault()
+    data = tricrypto_migrator.migrate_to_new_vault.encode_input()
+    allowed = allowlist_factory.validateCalldata(origin_name, tricrypto_migrator, data)
+    assert allowed == True
+    
+    # Test valid calldata after removing migration contract - migrator.migrate_to_new_vault()
+    implementation.setIsMigratorContract(tricrypto_migrator, False, {"from": owner})
+    data = tricrypto_migrator.migrate_to_new_vault.encode_input()
+    allowed = allowlist_factory.validateCalldata(origin_name, tricrypto_migrator, data)
+    assert allowed == False
         
 # Description: Standard migration
 # Signature: "migrator.migrateAll(address,address)"
@@ -549,35 +533,38 @@ def test_migrate_tricrypto(allowlist_factory, allowlist, owner, origin_name, imp
 # Param0: Must be a valid vault token
 # Param1: Must be a valid vault token
 def test_migrate_standard(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables, vault):
-    if "migrator_address_standard" in network_variables:
-        migrator = Contract(network_variables["migrator_address_standard"])
-        implementation.setIsMigratorContract(migrator, True, {"from": owner})
-        
-        # Test valid calldata before adding condition - migrator.migrateAll(address,address)
-        data = migrator.migrateAll.encode_input(vault, vault)
-        allowed = allowlist_factory.validateCalldata(origin_name, migrator, data)
-        assert allowed == False
+    migrator_address_standard_key = "migrator_address_standard"
+    if migrator_address_standard_key not in network_variables:
+        pytest.skip("no standard migrator address on this network")
 
-        # Add condition
-        condition = (
-            "migrateAll",
-            ["address", "address"],
-            [
-                ["target", "isMigratorContract"],
-                ["param", "isVault", "0"],
-                ["param", "isVault", "1"]
-            ],
-            implementation
-        )
-        allowlist.addCondition(condition, {"from": owner})
-        
-        # Test valid calldata after adding condition - migrator.migrateAll(address,address)
-        data = migrator.migrateAll.encode_input(vault, vault)
-        allowed = allowlist_factory.validateCalldata(origin_name, migrator, data)
-        assert allowed == True
-        
-        # Test valid calldata after removing migration contract - migrator.migrateAll()
-        implementation.setIsMigratorContract(migrator, False, {"from": owner})
-        data = migrator.migrateAll.encode_input(vault, vault)
-        allowed = allowlist_factory.validateCalldata(origin_name, migrator, data)
-        assert allowed == False
+    migrator = Contract(network_variables[migrator_address_standard_key])
+    implementation.setIsMigratorContract(migrator, True, {"from": owner})
+    
+    # Test valid calldata before adding condition - migrator.migrateAll(address,address)
+    data = migrator.migrateAll.encode_input(vault, vault)
+    allowed = allowlist_factory.validateCalldata(origin_name, migrator, data)
+    assert allowed == False
+
+    # Add condition
+    condition = (
+        "migrateAll",
+        ["address", "address"],
+        [
+            ["target", "isMigratorContract"],
+            ["param", "isVault", "0"],
+            ["param", "isVault", "1"]
+        ],
+        implementation
+    )
+    allowlist.addCondition(condition, {"from": owner})
+    
+    # Test valid calldata after adding condition - migrator.migrateAll(address,address)
+    data = migrator.migrateAll.encode_input(vault, vault)
+    allowed = allowlist_factory.validateCalldata(origin_name, migrator, data)
+    assert allowed == True
+    
+    # Test valid calldata after removing migration contract - migrator.migrateAll(address,address)
+    implementation.setIsMigratorContract(migrator, False, {"from": owner})
+    data = migrator.migrateAll.encode_input(vault, vault)
+    allowed = allowlist_factory.validateCalldata(origin_name, migrator, data)
+    assert allowed == False
