@@ -13,8 +13,6 @@
       "yvecrv_vault_address": "0xc5bDdf9843308380375a611c18B50Fb9341f502A",
       "threecrv_zap_address": "0x579422A1C774470cA623329C69f27cC3bEB935a1"
     },
-    "250": {
-      "address_provider_address": "0x727fe1759430df13655ddb0731dE0D0FDE929b04"
-    }
+    "250": {}
   }
 }
