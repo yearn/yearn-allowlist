@@ -76,6 +76,7 @@ def allowlist(allowlist_factory, owner, origin_name):
     
     # Delete all conditions
     allowlist.deleteAllConditions({"from": owner})
+    allowlist.deleteAllConditions({"from": owner})
     assert allowlist.conditionsLength() == 0
     
     # Return allowlist
