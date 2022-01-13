@@ -213,6 +213,7 @@ def test_market_repay_borrow(allowlist_factory, allowlist, owner, origin_name, i
 # Description: Enter markets
 # Signature: "comptroller.enterMarkets(address[])"
 # Target: Must be a valid comptroller
+# Param0: Must be a valid list of markets
 def test_enter_markets(allowlist_factory, allowlist, owner, origin_name, implementation, comptroller, market):
     # Test valid calldata before adding condition - comptroller.enterMarkets(address[])
     data = comptroller.enterMarkets.encode_input([market])
@@ -224,7 +225,8 @@ def test_enter_markets(allowlist_factory, allowlist, owner, origin_name, impleme
         "enterMarkets",
         ["address[]"],
         [
-            ["target", "isComptroller"]
+            ["target", "isComptroller"],
+            ["param", "areMarkets", "0"]
         ],
         implementation
     )
@@ -249,7 +251,8 @@ def test_exit_markets(allowlist_factory, allowlist, owner, origin_name, implemen
         "exitMarket",
         ["address"],
         [
-            ["target", "isComptroller"]
+            ["target", "isComptroller"],
+            ["param", "isMarket", "0"]
         ],
         implementation
     )

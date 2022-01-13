@@ -87,6 +87,25 @@ contract IronBankAllowlistImplementation {
   }
 
   /**
+   * @notice Determine whether or not a given market is a valid market
+   * @param marketAddresses The market addresses to test
+   * @return Returns true if the market is valid and false if not
+   */
+  function areMarkets(address[] memory marketAddresses)
+    public
+    view
+    returns (bool)
+  {
+    for (uint256 marketIdx; marketIdx < marketAddresses.length; marketIdx++) {
+      address marketAddress = marketAddresses[marketIdx];
+      if (!isMarket(marketAddress)) {
+        return false;
+      }
+      return true;
+    }
+  }
+
+  /**
    * @dev Internal convienence method used to fetch comptroller interface
    */
   function comptroller() internal view returns (IComptroller) {
