@@ -1,4 +1,4 @@
-from brownie import Contract, chain, accounts, YearnAllowlistImplementation, ZERO_ADDRESS
+from brownie import Contract, chain, accounts, YearnVaultsAllowlistImplementation, ZERO_ADDRESS
 import json
 
 def main():
@@ -21,8 +21,8 @@ def main():
     
     # Implementation
     print("Deploying implementation logic...")
-    registry_address = network_variables["registry_address"]
-    implementation = YearnAllowlistImplementation.deploy(registry_address, {"from": owner})
+    address_provider_address = network_variables["address_provider_address"]
+    implementation = YearnVaultsAllowlistImplementation.deploy(address_provider_address, {"from": owner})
     
     # Conditions
     print("Adding conditions...")

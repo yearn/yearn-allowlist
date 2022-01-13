@@ -26,6 +26,10 @@ def allowlist_factory(allowlist_variables):
 def owner(allowlist_factory, origin_name):
     owner_address = allowlist_factory.protocolOwnerAddressByOriginName(origin_name)
     return accounts.at(owner_address, force=True)
+
+@pytest.fixture
+def address_provider(network_variables):
+    return Contract(network_variables["address_provider_address"])
     
 @pytest.fixture
 def network_variables(protocol_configuration):
@@ -71,6 +75,7 @@ def allowlist(allowlist_factory, owner, origin_name):
     assert protocol_registered == True
     
     # Delete all conditions
+    allowlist.deleteAllConditions({"from": owner})
     allowlist.deleteAllConditions({"from": owner})
     assert allowlist.conditionsLength() == 0
     

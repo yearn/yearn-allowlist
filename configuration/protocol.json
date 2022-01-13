@@ -2,19 +2,17 @@
   "originName": "yearn.finance",
   "networkVariables": {
     "1": {
-      "registry_address": "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
-      "vault_zap_in_addresses": [
-        "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E",
-        "0xc695f73c1862e050059367B2E64489E66c525983"
-      ],
-      "vault_zap_out_addresses": ["0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c"],
-      "migrator_addresses": [
-        "0x1824df8D751704FA10FA371d62A37f9B8772ab90",
-        "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
-      ]
+      "address_provider_address": "0x9be19Ee7Bc4099D62737a7255f5c227fBcd6dB93",
+      "zap_out_of_vault_address": "0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c",
+      "zap_in_to_vault_address": "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E",
+      "zap_in_to_pickle_address": "0xc695f73c1862e050059367B2E64489E66c525983",
+      "migrator_address_standard": "0x1824df8D751704FA10FA371d62A37f9B8772ab90",
+      "migrator_address_tricrypto": "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1",
+      "pickle_jar_address": "0xCeD67a187b923F0E5ebcc77C7f2F7da20099e378",
+      "pickle_gauge_address": "0xDA481b277dCe305B97F4091bD66595d57CF31634",
+      "yvecrv_vault_address": "0xc5bDdf9843308380375a611c18B50Fb9341f502A",
+      "threecrv_zap_address": "0x579422A1C774470cA623329C69f27cC3bEB935a1"
     },
-    "250": {
-      "registry_address": "0x727fe1759430df13655ddb0731dE0D0FDE929b04"
-    }
+    "250": {}
   }
 }
