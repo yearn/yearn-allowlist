@@ -16,22 +16,23 @@ def implementation(owner, YearnLabsAllowlistImplementation):
 # Description: Pickle jar deposit
 # Signature: "pickle_jar.deposit(uint256)"
 # Target: Must be the yveCRV/ETH SLP pickle jar
-def test_pickle_jar_deposit(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
+def test_pickle_jar_deposit(allowlist_registry, allowlist, owner, origin_name, implementation, allowlist_addresses):
     # This test is not supported on all networks
     test_supported = chain.id == 1
     if (test_supported == False):
         return
 
     # Fetch pickle jar
-    pickle_jar = Contract(network_variables["pickle_jar_address"])
+    pickle_jar = Contract(allowlist_addresses["pickle_jar_address"])
 
     # Test valid calldata before adding condition - pickle_jar.deposit(UINT256_MAX)
     data = pickle_jar.deposit.encode_input(MAX_UINT256)
-    allowed = allowlist_factory.validateCalldata(origin_name, pickle_jar, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, pickle_jar, data)
     assert allowed == False
 
     # Add condition
     condition = (
+        "PICKLE_JAR_DEPOSIT",
         "deposit",
         ["uint256"],
         [
@@ -43,7 +44,7 @@ def test_pickle_jar_deposit(allowlist_factory, allowlist, owner, origin_name, im
     
     # Test valid calldata after adding condition - pickle_jar.deposit(UINT256_MAX)
     data = pickle_jar.deposit.encode_input(MAX_UINT256)
-    allowed = allowlist_factory.validateCalldata(origin_name, pickle_jar, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, pickle_jar, data)
     assert allowed == True
     
 ##############################################################
@@ -55,22 +56,23 @@ def test_pickle_jar_deposit(allowlist_factory, allowlist, owner, origin_name, im
 # Description: Pickle jar deposit
 # Signature: "pickle_jar.deposit(uint256)"
 # Target: Must be the yveCRV/ETH SLP pickle jar
-def test_pickle_gauge_stake(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
+def test_pickle_gauge_stake(allowlist_registry, allowlist, owner, origin_name, implementation, allowlist_addresses):
     # This test is not supported on all networks
     test_supported = chain.id == 1
     if (test_supported == False):
         return
 
     # Fetch pickle gauge
-    pickle_gauge = Contract(network_variables["pickle_gauge_address"])
+    pickle_gauge = Contract(allowlist_addresses["pickle_gauge_address"])
 
     # Test valid calldata before adding condition - pickle_gauge.deposit(UINT256_MAX)
     data = pickle_gauge.deposit.encode_input(MAX_UINT256)
-    allowed = allowlist_factory.validateCalldata(origin_name, pickle_gauge, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, pickle_gauge, data)
     assert allowed == False
 
     # Add condition
     condition = (
+        "PICKLE_GAUGE_STAKE",
         "deposit",
         ["uint256"],
         [
@@ -82,7 +84,7 @@ def test_pickle_gauge_stake(allowlist_factory, allowlist, owner, origin_name, im
     
     # Test valid calldata after adding condition - pickle_gauge.deposit(UINT256_MAX)
     data = pickle_gauge.deposit.encode_input(MAX_UINT256)
-    allowed = allowlist_factory.validateCalldata(origin_name, pickle_gauge, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, pickle_gauge, data)
     assert allowed == True
     
 ##############################################################
@@ -94,22 +96,23 @@ def test_pickle_gauge_stake(allowlist_factory, allowlist, owner, origin_name, im
 # Description: yveCRV vault lock
 # Signature: "yvecrv.deposit(uint256)"
 # Target: Must be yveCRV-DAO yVault
-def test_yvecrv_lock(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
+def test_yvecrv_lock(allowlist_registry, allowlist, owner, origin_name, implementation, allowlist_addresses):
     # This test is not supported on all networks
     test_supported = chain.id == 1
     if (test_supported == False):
         return
 
     # Fetch yveCRV-DAO vault
-    yvecrv_vault = Contract(network_variables["yvecrv_vault_address"])
+    yvecrv_vault = Contract(allowlist_addresses["yvecrv_vault_address"])
 
     # Test valid calldata before adding condition - yveCrv.deposit(UINT256_MAX)
     data = yvecrv_vault.deposit.encode_input(MAX_UINT256)
-    allowed = allowlist_factory.validateCalldata(origin_name, yvecrv_vault, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, yvecrv_vault, data)
     assert allowed == False
 
     # Add condition
     condition = (
+        "YVECRV_LOCK",
         "deposit",
         ["uint256"],
         [
@@ -121,7 +124,7 @@ def test_yvecrv_lock(allowlist_factory, allowlist, owner, origin_name, implement
     
     # Test valid calldata after adding condition - pickle_gauge.deposit(UINT256_MAX)
     data = yvecrv_vault.deposit.encode_input(MAX_UINT256)
-    allowed = allowlist_factory.validateCalldata(origin_name, yvecrv_vault, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, yvecrv_vault, data)
     assert allowed == True
     
 # Claiming
@@ -129,22 +132,23 @@ def test_yvecrv_lock(allowlist_factory, allowlist, owner, origin_name, implement
 # Description: yveCRV vault claim
 # Signature: "yvecrv.claim()"
 # Target: Must be yveCRV-DAO yVault
-def test_yvecrv_claim(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
+def test_yvecrv_claim(allowlist_registry, allowlist, owner, origin_name, implementation, allowlist_addresses):
     # This test is not supported on all networks
     test_supported = chain.id == 1
     if (test_supported == False):
         return
 
     # Fetch yveCRV-DAO vault
-    yvecrv_vault = Contract(network_variables["yvecrv_vault_address"])
+    yvecrv_vault = Contract(allowlist_addresses["yvecrv_vault_address"])
 
     # Test valid calldata before adding condition - yveCrv.claim()
     data = yvecrv_vault.claim.encode_input()
-    allowed = allowlist_factory.validateCalldata(origin_name, yvecrv_vault, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, yvecrv_vault, data)
     assert allowed == False
 
     # Add condition
     condition = (
+        "YVECRV_CLAIM",
         "claim",
         [],
         [
@@ -156,7 +160,7 @@ def test_yvecrv_claim(allowlist_factory, allowlist, owner, origin_name, implemen
     
     # Test valid calldata after adding condition - yvecrv_vault.claim()
     data = yvecrv_vault.claim.encode_input()
-    allowed = allowlist_factory.validateCalldata(origin_name, yvecrv_vault, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, yvecrv_vault, data)
     assert allowed == True
     
 ##############################################################
@@ -168,22 +172,23 @@ def test_yvecrv_claim(allowlist_factory, allowlist, owner, origin_name, implemen
 # Description: Reinvest 3CRV into yveCRV-DAO vault
 # Signature: "threecrv_zap.zap()"
 # Target: Must be yearn 3CRV yveCRV-DAO zap contract
-def test_threecrv_yvecrv_zap(allowlist_factory, allowlist, owner, origin_name, implementation, network_variables):
+def test_threecrv_yvecrv_zap(allowlist_registry, allowlist, owner, origin_name, implementation, allowlist_addresses):
     # This test is not supported on all networks
     test_supported = chain.id == 1
     if (test_supported == False):
         return
 
     # Fetch 3CRV zap contract
-    threecrv_zap = Contract(network_variables["threecrv_zap_address"])
+    threecrv_zap = Contract(allowlist_addresses["threecrv_zap_address"])
 
     # Test valid calldata before adding condition - yveCrv.deposit(UINT256_MAX)
     data = threecrv_zap.zap.encode_input()
-    allowed = allowlist_factory.validateCalldata(origin_name, threecrv_zap, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, threecrv_zap, data)
     assert allowed == False
 
     # Add condition
     condition = (
+        "3CRV_YVECRV_ZAP_IN",
         "zap",
         [],
         [
@@ -195,5 +200,5 @@ def test_threecrv_yvecrv_zap(allowlist_factory, allowlist, owner, origin_name, i
     
     # Test valid calldata after adding condition - threecrv_zap.zap()
     data = threecrv_zap.zap.encode_input()
-    allowed = allowlist_factory.validateCalldata(origin_name, threecrv_zap, data)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, threecrv_zap, data)
     assert allowed == True

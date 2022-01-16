@@ -16,7 +16,6 @@ contract YearnLabsAllowlistImplementation {
     assembly {
       chainId := chainid()
     }
-    require(chainId == 1, "This contract is only supported on eth mainnet"); // Only mainnet
   }
 
   function isPickleJar(address jarAddress) public view returns (bool) {

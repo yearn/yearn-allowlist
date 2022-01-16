@@ -1,0 +1,91 @@
+[
+  {
+    "id": "TOKEN_APPROVE_MARKET",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "approve",
+    "paramTypes": ["address", "uint256"],
+    "requirements": [
+      ["target", "isMarketUnderlyingToken"],
+      ["param", "isMarket", "0"]
+    ]
+  },
+  {
+    "id": "MARKET_SUPPLY",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "mint",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isMarket"]]
+  },
+  {
+    "id": "MARKET_WITHDRAW_CYTOKEN",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "redeem",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isMarket"]]
+  },
+  {
+    "id": "MARKET_WITHDRAW_UNDERLYING",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "redeemUnderlying",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isMarket"]]
+  },
+  {
+    "id": "MARKET_BORROW",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "borrow",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isMarket"]]
+  },
+  {
+    "id": "MARKET_REPAY",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "repayBorrow",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isMarket"]]
+  },
+  {
+    "id": "COMPTROLLER_ENTER_MARKETS",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "enterMarkets",
+    "paramTypes": ["address[]"],
+    "requirements": [
+      ["target", "isComptroller"],
+      ["param", "areMarkets", "0"]
+    ]
+  },
+  {
+    "id": "COMPTROLLER_EXIT_MARKET",
+    "implementationId": "IMPLEMENTATION_IRON_BANK",
+    "methodName": "exitMarket",
+    "paramTypes": ["address"],
+    "requirements": [
+      ["target", "isComptroller"],
+      ["param", "isMarket", "0"]
+    ]
+  },
+  {
+    "id": "TOKEN_APPROVE_VAULT",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "approve",
+    "paramTypes": ["address", "uint256"],
+    "requirements": [
+      ["target", "isVaultUnderlyingToken"],
+      ["param", "isVault", "0"]
+    ]
+  },
+  {
+    "id": "VAULT_DEPOST",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "deposit",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isVault"]]
+  },
+  {
+    "id": "VAULT_WITHDRAW",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "withdraw",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isVault"]]
+  }
+]

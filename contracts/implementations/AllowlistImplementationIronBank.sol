@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity 0.8.11;
 
 /*******************************************************
  *                      Interfaces
@@ -9,8 +9,6 @@ interface IComptroller {
 }
 
 interface IRegistryAdapter {
-  function isMarketListed(address) external view returns (bool);
-
   function assetsTokensAddresses() external view returns (address[] memory);
 
   function comptrollerAddress() external view returns (address);
@@ -20,27 +18,14 @@ interface IAddressesProvider {
   function addressById(string memory) external view returns (address);
 }
 
-interface IAllowlistFactory {
-  function protocolOwnerAddressByOriginName(string memory originName)
-    external
-    view
-    returns (address ownerAddress);
-}
-
 /*******************************************************
  *                      Implementation
  *******************************************************/
-contract IronBankAllowlistImplementation {
-  string public constant protocolOriginName = "yearn.finance";
-  address public allowlistFactoryAddress;
+contract AllowlistImplementationIronBank {
   address public addressesProviderAddress;
 
-  constructor(
-    address _addressesProviderAddress,
-    address _allowlistFactoryAddress
-  ) {
+  constructor(address _addressesProviderAddress) {
     addressesProviderAddress = _addressesProviderAddress;
-    allowlistFactoryAddress = _allowlistFactoryAddress;
   }
 
   /**
@@ -66,15 +51,15 @@ contract IronBankAllowlistImplementation {
 
   /**
    * @notice Determine whether or not a given address is the current comptroller
-   * @param comptrollerAddress The address to test
+   * @param _comptrollerAddress The address to test
    * @return Returns true if the address is the correct comptroller
    */
-  function isComptroller(address comptrollerAddress)
+  function isComptroller(address _comptrollerAddress)
     public
     view
     returns (bool)
   {
-    return comptrollerAddress == address(comptroller());
+    return _comptrollerAddress == address(comptroller());
   }
 
   /**
@@ -101,25 +86,42 @@ contract IronBankAllowlistImplementation {
       if (!isMarket(marketAddress)) {
         return false;
       }
-      return true;
     }
+    return true;
+  }
+
+  /*******************************************************
+   *                   Convienence methods
+   *******************************************************/
+
+  /**
+   * @dev Fetch comptroller address
+   */
+  function comptrollerAddress() public view returns (address) {
+    return registryAdapter().comptrollerAddress();
   }
 
   /**
-   * @dev Internal convienence method used to fetch comptroller interface
+   * @dev Fetch registry adapter address
+   */
+  function registryAdapterAddress() public view returns (address) {
+    return
+      IAddressesProvider(addressesProviderAddress).addressById(
+        "REGISTRY_ADAPTER_IRON_BANK"
+      );
+  }
+
+  /**
+   * @dev Fetch comptroller interface
    */
   function comptroller() internal view returns (IComptroller) {
-    address comptrollerAddress = registryAdapter().comptrollerAddress();
-    return IComptroller(comptrollerAddress);
+    return IComptroller(comptrollerAddress());
   }
 
   /**
-   * @dev Internal convienence method used to fetch registry adapter interface
+   * @dev Fetch registry adapter interface
    */
   function registryAdapter() internal view returns (IRegistryAdapter) {
-    address registryAdapterAddress = IAddressesProvider(
-      addressesProviderAddress
-    ).addressById("REGISTRY_ADAPTER_IRON_BANK");
-    return IRegistryAdapter(registryAdapterAddress);
+    return IRegistryAdapter(registryAdapterAddress());
   }
 }

@@ -1,14 +1,14 @@
-from brownie import Contract, chain, accounts, YearnVaultsAllowlistImplementation, ZERO_ADDRESS
+from brownie import Contract, chain, accounts, AllowlistImplementationYearnVaults, ZERO_ADDRESS
 import json
 
 def main():
     # Setup
     protocol_configuration = json.load(open('configuration/protocol.json', 'r'))
-    allowlist_configuration = json.load(open('configuration/allowlist.json', 'r'))
+    allowlist_addresses = json.load(open('configuration/allowlist.json', 'r'))
     origin_name = protocol_configuration["originName"]
-    allowlist_variables = allowlist_configuration["networkVariables"][str(chain.id)]
-    network_variables = protocol_configuration["networkVariables"][str(chain.id)]
-    allowlist_factory_address = allowlist_variables["allowlist_factory_address"]
+    allowlist_addresses = allowlist_addresses["networkVariables"][str(chain.id)]
+    allowlist_addresses = protocol_configuration["networkVariables"][str(chain.id)]
+    allowlist_factory_address = allowlist_addresses["allowlist_factory_address"]
     allowlist_factory = Contract(allowlist_factory_address)
     allowlist_address = allowlist_factory.allowlistAddressByOriginName(origin_name)
     allowlist = Contract(allowlist_address)
@@ -21,8 +21,8 @@ def main():
     
     # Implementation
     print("Deploying implementation logic...")
-    address_provider_address = network_variables["address_provider_address"]
-    implementation = YearnVaultsAllowlistImplementation.deploy(address_provider_address, {"from": owner})
+    addresses_provider_address = allowlist_addresses["addresses_provider_address"]
+    implementation = AllowlistImplementationYearnVaults.deploy(addresses_provider_address, {"from": owner})
     
     # Conditions
     print("Adding conditions...")

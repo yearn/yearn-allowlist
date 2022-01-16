@@ -34,10 +34,9 @@ interface IAddressesProvider {
 /*******************************************************
  *                      Implementation
  *******************************************************/
-contract YearnVaultsAllowlistImplementation {
+contract AllowlistImplementationYearnVaults {
   string public constant protocolOriginName = "yearn.finance"; // Protocol owner name (must match the registered domain of the registered allowlist)
   address public addressesProviderAddress; // Used to fetch current registry
-  address public registryAddress; // Used to fetch information about vaults
   address public allowlistFactoryAddress; // Used to fetch protocol owner
   mapping(address => bool) public isZapInContract; // Used to test zap in contracts
   mapping(address => bool) public isZapOutContract; // Used to test zap out contracts
@@ -152,14 +151,38 @@ contract YearnVaultsAllowlistImplementation {
     return false;
   }
 
+  /*******************************************************
+   *                    Convienence methods
+   *******************************************************/
+
   /**
-   * @dev Internal convienence method used to fetch registry interface
+   * @dev Fetch registry adapter address
+   */
+  function registryAdapterAddress() public view returns (address) {
+    return
+      IAddressesProvider(addressesProviderAddress).addressById(
+        "REGISTRY_ADAPTER_V2_VAULTS"
+      );
+  }
+
+  /**
+   * @dev Fetch registry adapter interface
+   */
+  function registryAdapter() internal view returns (IRegistryAdapter) {
+    return IRegistryAdapter(registryAdapterAddress());
+  }
+
+  /**
+   * @dev Fetch registry address
+   */
+  function registryAddress() public view returns (address) {
+    return registryAdapter().registryAddress();
+  }
+
+  /**
+   * @dev Fetch registry interface
    */
   function registry() internal view returns (IRegistry) {
-    address registryAdapterAddress = IAddressesProvider(
-      addressesProviderAddress
-    ).addressById("REGISTRY_ADAPTER_V2_VAULTS");
-    IRegistryAdapter registryAdapter = IRegistryAdapter(registryAdapterAddress);
-    return IRegistry(registryAdapter.registryAddress());
+    return IRegistry(registryAddress());
   }
 }
