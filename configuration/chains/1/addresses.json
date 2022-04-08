@@ -8,5 +8,6 @@
   "pickle_jar_address": "0xCeD67a187b923F0E5ebcc77C7f2F7da20099e378",
   "pickle_gauge_address": "0xDA481b277dCe305B97F4091bD66595d57CF31634",
   "yvecrv_vault_address": "0xc5bDdf9843308380375a611c18B50Fb9341f502A",
-  "threecrv_zap_address": "0x579422A1C774470cA623329C69f27cC3bEB935a1"
+  "threecrv_zap_address": "0x579422A1C774470cA623329C69f27cC3bEB935a1",
+  "implementation_yearn_vaults_address": "0x4894d98442f5bea884cd6fa958954f73f58ae9b0"
 }
