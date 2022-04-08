@@ -63,7 +63,6 @@ contract AllowlistImplementationYearnVaults {
    * @notice Fetch owner address from registry
    */
   function ownerAddress() public view returns (address protcolOwnerAddress) {
-    // revert("this shouldnt happen...");
     protcolOwnerAddress = IAllowlistRegistry(allowlistRegistryAddress)
       .protocolOwnerAddressByOriginName(protocolOriginName);
   }
