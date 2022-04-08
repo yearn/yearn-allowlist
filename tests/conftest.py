@@ -54,7 +54,7 @@ def allowlist(allowlist_registry, owner, origin_name):
     allowlist_address = allowlist_registry.allowlistAddressByOriginName(origin_name)
     registration_started = allowlist_address != ZERO_ADDRESS
     if  registration_started == False:
-        allowlist_registry.register(origin_name, {"from": owner})
+        allowlist_registry.registerProtocol(origin_name, {"from": owner})
         
     # Make sure a new allowlist was generated
     allowlist_address = allowlist_registry.allowlistAddressByOriginName(origin_name)

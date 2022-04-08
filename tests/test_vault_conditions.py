@@ -1,5 +1,5 @@
 import pytest
-from brownie import Contract, ZERO_ADDRESS, chain
+from brownie import Contract, ZERO_ADDRESS, chain, convert
 
 MAX_UINT256 = 2**256-1
 
@@ -8,8 +8,8 @@ def implementation_id():
     return "IMPLEMENTATION_YEARN_VAULTS"
 
 @pytest.fixture(autouse=True)
-def implementation(owner, AllowlistImplementationYearnVaults, allowlist_addresses, allowlist_factory, allowlist, implementation_id):
-    use_live_contract = True
+def implementation(owner, AllowlistImplementationYearnVaults, allowlist_addresses, allowlist_registry, allowlist, implementation_id):
+    use_live_contract = False
 
     _implementation = None
     if use_live_contract:
@@ -18,7 +18,7 @@ def implementation(owner, AllowlistImplementationYearnVaults, allowlist_addresse
             _implementation = Contract(allowlist_addresses[key])
     if _implementation == None:
         address_provider = Contract(allowlist_addresses["addresses_provider_address"])
-        _implementation = AllowlistImplementationYearnVaults.deploy(address_provider, allowlist_factory, {"from": owner})
+        _implementation = AllowlistImplementationYearnVaults.deploy(address_provider, allowlist_registry, {"from": owner})
 
     allowlist.setImplementation(implementation_id, _implementation, {"from": owner})
     return _implementation
@@ -88,7 +88,7 @@ def test_token_approval_for_vault(allowlist_registry, allowlist, owner, origin_n
 #   - zap_in_yearn_address: "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E"
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 #   - another address on the custom 
-def test_token_approval_for_zap(allowlist_registry, allowlist, owner, allowlist_addresses, origin_name, implementation_id, vault_token):
+def test_token_approval_for_zap(allowlist_registry, allowlist, owner, allowlist_addresses, origin_name, implementation_id, vault_token, implementation):
     # This test is not supported on all networks
     test_supported = "zap_in_to_vault_address" in allowlist_addresses
     if (chain.id == 1):
@@ -342,7 +342,7 @@ def test_zap_in_to_vault(allowlist_registry, allowlist, owner, origin_name, impl
             MAX_UINT256, 
             ZERO_ADDRESS, 
             ZERO_ADDRESS, 
-            to_bytes('0x0'), 
+            convert.to_bytes('0x0'), 
             ZERO_ADDRESS, 
             False
         )
@@ -416,7 +416,7 @@ def test_zap_out_of_vault(allowlist_registry, allowlist, owner, origin_name, imp
             False,
             MAX_UINT256,
             ZERO_ADDRESS,
-            to_bytes('0x0'),
+            convert.to_bytes('0x0'),
             ZERO_ADDRESS,
             False
         )
@@ -497,7 +497,7 @@ def test_zap_in_to_pickle_jar(allowlist_registry, allowlist, owner, origin_name,
             MAX_UINT256,
             ZERO_ADDRESS, 
             ZERO_ADDRESS, 
-            to_bytes('0x0'), 
+            convert.to_bytes('0x0'), 
             ZERO_ADDRESS
         )
     
