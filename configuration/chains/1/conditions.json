@@ -1,70 +1,5 @@
 [
   {
-    "id": "TOKEN_APPROVE_MARKET",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "approve",
-    "paramTypes": ["address", "uint256"],
-    "requirements": [
-      ["target", "isMarketUnderlyingToken"],
-      ["param", "isMarket", "0"]
-    ]
-  },
-  {
-    "id": "MARKET_SUPPLY",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "mint",
-    "paramTypes": ["uint256"],
-    "requirements": [["target", "isMarket"]]
-  },
-  {
-    "id": "MARKET_WITHDRAW_CYTOKEN",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "redeem",
-    "paramTypes": ["uint256"],
-    "requirements": [["target", "isMarket"]]
-  },
-  {
-    "id": "MARKET_WITHDRAW_UNDERLYING",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "redeemUnderlying",
-    "paramTypes": ["uint256"],
-    "requirements": [["target", "isMarket"]]
-  },
-  {
-    "id": "MARKET_BORROW",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "borrow",
-    "paramTypes": ["uint256"],
-    "requirements": [["target", "isMarket"]]
-  },
-  {
-    "id": "MARKET_REPAY",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "repayBorrow",
-    "paramTypes": ["uint256"],
-    "requirements": [["target", "isMarket"]]
-  },
-  {
-    "id": "COMPTROLLER_ENTER_MARKETS",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "enterMarkets",
-    "paramTypes": ["address[]"],
-    "requirements": [
-      ["target", "isComptroller"],
-      ["param", "areMarkets", "0"]
-    ]
-  },
-  {
-    "id": "COMPTROLLER_EXIT_MARKET",
-    "implementationId": "IMPLEMENTATION_IRON_BANK",
-    "methodName": "exitMarket",
-    "paramTypes": ["address"],
-    "requirements": [
-      ["target", "isComptroller"],
-      ["param", "isMarket", "0"]
-    ]
-  },
-  {
     "id": "TOKEN_APPROVE_VAULT",
     "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
     "methodName": "approve",
@@ -72,6 +7,16 @@
     "requirements": [
       ["target", "isVaultUnderlyingToken"],
       ["param", "isVault", "0"]
+    ]
+  },
+  {
+    "id": "TOKEN_APPROVE_ZAP",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "approve",
+    "paramTypes": ["address", "uint256"],
+    "requirements": [
+      ["target", "isVaultUnderlyingToken"],
+      ["param", "isZapInContract", "0"]
     ]
   },
   {
@@ -87,5 +32,111 @@
     "methodName": "withdraw",
     "paramTypes": ["uint256"],
     "requirements": [["target", "isVault"]]
+  },
+  {
+    "id": "VAULT_APPROVE_ZAP",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "approve",
+    "paramTypes": ["address", "uint256"],
+    "requirements": [
+      ["target", "isVault"],
+      ["param", "isZapOutContract", "0"]
+    ]
+  },
+  {
+    "id": "VAULT_APPROVE_MIGRATOR",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "approve",
+    "paramTypes": ["address", "uint256"],
+    "requirements": [
+      ["target", "isVault"],
+      ["param", "isMigratorContract", "0"]
+    ]
+  },
+  {
+    "id": "ZAP_IN_TO_VAULT",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "ZapIn",
+    "paramTypes": [
+      "address",
+      "uint256",
+      "address",
+      "address",
+      "bool",
+      "uint256",
+      "address",
+      "address",
+      "bytes",
+      "address",
+      "address"
+    ],
+    "requirements": [
+      ["target", "isZapInContract"],
+      ["param", "isVault", "2"]
+    ]
+  },
+  {
+    "id": "ZAP_OUT_OF_VAULT",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "ZapOut",
+    "paramTypes": [
+      "address",
+      "uint256",
+      "address",
+      "bool",
+      "uint256",
+      "address",
+      "bytes",
+      "address",
+      "bool"
+    ],
+    "requirements": [
+      ["target", "isZapOutContract"],
+      ["param", "isVault", "0"]
+    ]
+  },
+  {
+    "id": "ZAP_IN_TO_PICKLE_JAR",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "ZapIn",
+    "paramTypes": [
+      "address",
+      "uint256",
+      "address",
+      "uint256",
+      "address",
+      "address",
+      "bytes",
+      "address"
+    ],
+    "requirements": [
+      ["target", "isZapInContract"],
+      ["param", "isPickleJarContract", "2"]
+    ]
+  },
+  {
+    "id": "MIGRATE_VAULT_TRICRYPTO",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "migrate_to_new_vault",
+    "paramTypes": [],
+    "requirements": [["target", "isMigratorContract"]]
+  },
+  {
+    "id": "MIGRATE_VAULT_V2",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "migrateAll",
+    "paramTypes": ["address", "address"],
+    "requirements": [
+      ["target", "isMigratorContract"],
+      ["param", "isVault", "0"],
+      ["param", "isVault", "1"]
+    ]
+  },
+  {
+    "id": "3CRV_REINVEST_ZAP",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "zap",
+    "paramTypes": [],
+    "requirements": [["target", "isZapInContract"]]
   }
 ]
