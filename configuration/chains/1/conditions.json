@@ -138,5 +138,29 @@
     "methodName": "zap",
     "paramTypes": [],
     "requirements": [["target", "isZapInContract"]]
+  },
+  {
+    "id": "CRV_APPROVE_YVE_CRV",
+    "implementationId": "IMPLEMENTATION_YEARN_YVE_CRV",
+    "methodName": "approve",
+    "paramTypes": ["address", "uint256"],
+    "requirements": [
+      ["target", "isCRV"],
+      ["param", "isYveCRV", "0"]
+    ]
+  },
+  {
+    "id": "YVE_CRV_DEPSOIT",
+    "implementationId": "IMPLEMENTATION_YEARN_YVE_CRV",
+    "methodName": "deposit",
+    "paramTypes": ["uint256"],
+    "requirements": [["target", "isYveCRV"]]
+  },
+  {
+    "id": "YVE_CRV_CLAIM",
+    "implementationId": "IMPLEMENTATION_YEARN_YVE_CRV",
+    "methodName": "claim",
+    "paramTypes": [],
+    "requirements": [["target", "isYveCRV"]]
   }
 ]
