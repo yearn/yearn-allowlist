@@ -7,11 +7,11 @@ MAX_UINT256 = 2**256-1
 def implementation_id():
     return "IMPLEMENTATION_YEARN_YVE_CRV"
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def crv():
     return Contract("0xD533a949740bb3306d119CC777fa900bA034cd52")
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def yve_crv():
     return Contract("0xc5bddf9843308380375a611c18b50fb9341f502a")
 
