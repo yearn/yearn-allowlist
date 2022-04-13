@@ -64,7 +64,7 @@ def main():
     if allowlist_address != ZERO_ADDRESS:
         print("Found allowlist:         ", allowlist_address)
     owner_address = allowlist_registry.protocolOwnerAddressByOriginName(origin_name)
-    owner = accounts.load('x48_deployer')
+    owner = accounts.at(owner_address, force=True)
     print()
     
     ##########################################
@@ -75,10 +75,10 @@ def main():
         print("Skipping registration:    Protocol is already registered")
     else:
         # Registration
-        allowlist_factory.registerProtocol(origin_name, {"from": owner})
+        allowlist_registry.registerProtocol(origin_name, {"from": owner})
     
         # Test registration
-        allowlist_address = allowlist_factory.allowlistAddressByOriginName(origin_name)
+        allowlist_address = allowlist_registry.allowlistAddressByOriginName(origin_name)
         if (allowlist_address != ZERO_ADDRESS):
             print("Protocol successfully registered.")
             print("To continue, add implementations and conditions to your allowlist:", allowlist_address)
@@ -151,5 +151,4 @@ def main():
     # print(conditions_json)
     
     print("Success!!")
-    
     
