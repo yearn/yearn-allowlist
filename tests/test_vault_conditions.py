@@ -129,50 +129,6 @@ def test_token_approval_for_zap(allowlist_registry, allowlist, owner, allowlist_
 
     chain.revert()
 
-
-# Description: Approval of the migrator contract
-# Signature: "token.approve(address,uint256)"
-# Target: Must be a migrator contract
-# Param 0: Must be a valid vault address
-def test_migrator_approval_for_vault(allowlist_registry, allowlist, owner, origin_name, implementation_id, implementation, vault, allowlist_addresses):
-    chain.snapshot()
-
-    test_supported = "migrator_address_standard" in allowlist_addresses
-    if (chain.id == 1):
-        assert test_supported == True
-    if (test_supported == False):
-        return
-    migrator_contract = Contract(allowlist_addresses["migrator_address_standard"])
-
-    # Add condition
-    condition = (
-        "TOKEN_APPROVE_MIGRATOR",
-        implementation_id,
-        "approve",
-        ["address", "uint256"],
-        [
-            ["target", "isVault"], 
-            ["param", "isMigratorContract", "0"]
-        ]
-    )
-    allowlist.addCondition(condition, {"from": owner})
-    
-    # Test valid calldata (before updating implementation) - token.approve(migator_contract, UINT256_MAX)
-    data = vault.approve.encode_input(migrator_contract, MAX_UINT256)
-    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
-    assert allowed == False
-
-    # Set zapper contract addresse
-    implementation.setIsMigratorContract(migrator_contract, True, {"from": owner})
-    assert implementation.isMigratorContract(migrator_contract) == True
-
-    # Test valid calldata (after updating implementation) - token.approve(migator_contract, UINT256_MAX)
-    data = vault.approve.encode_input(migrator_contract, MAX_UINT256)
-    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
-    assert allowed == True
-
-    chain.revert()
-
 ##############################################################
 # Target: Vaults
 ##############################################################
