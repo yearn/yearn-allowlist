@@ -20,7 +20,7 @@ interface IVault {
   function token() external view returns (address);
 }
 
-interface IAllowlistFactory {
+interface IAllowlistRegistry {
   function protocolOwnerAddressByOriginName(string memory originName)
     external
     view
@@ -37,7 +37,7 @@ interface IAddressesProvider {
 contract AllowlistImplementationYearnVaults {
   string public constant protocolOriginName = "yearn.finance"; // Protocol owner name (must match the registered domain of the registered allowlist)
   address public addressesProviderAddress; // Used to fetch current registry
-  address public allowlistFactoryAddress; // Used to fetch protocol owner
+  address public allowlistRegistryAddress; // Used to fetch protocol owner
   mapping(address => bool) public isZapInContract; // Used to test zap in contracts
   mapping(address => bool) public isZapOutContract; // Used to test zap out contracts
   mapping(address => bool) public isMigratorContract; // Used to test migrator contracts
@@ -45,10 +45,10 @@ contract AllowlistImplementationYearnVaults {
 
   constructor(
     address _addressesProviderAddress,
-    address _allowlistFactoryAddress
+    address _allowlistRegistryAddress
   ) {
     addressesProviderAddress = _addressesProviderAddress; // Set address provider address (can be updated by owner)
-    allowlistFactoryAddress = _allowlistFactoryAddress; // Set allowlist factory address (can only be set once)
+    allowlistRegistryAddress = _allowlistRegistryAddress; // Set allowlist registry address (can only be set once)
   }
 
   /**
@@ -60,10 +60,10 @@ contract AllowlistImplementationYearnVaults {
   }
 
   /**
-   * @notice Fetch owner address from factory
+   * @notice Fetch owner address from registry
    */
   function ownerAddress() public view returns (address protcolOwnerAddress) {
-    protcolOwnerAddress = IAllowlistFactory(allowlistFactoryAddress)
+    protcolOwnerAddress = IAllowlistRegistry(allowlistRegistryAddress)
       .protocolOwnerAddressByOriginName(protocolOriginName);
   }
 

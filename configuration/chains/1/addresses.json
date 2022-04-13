@@ -1,5 +1,5 @@
 {
-  "addresses_provider_address": "0x9be19Ee7Bc4099D62737a7255f5c227fBcd6dB93",
+  "addresses_provider_address": "0xe11dC9f2Ab122dC5978EACA41483Da0D7D7e6128",
   "zap_out_of_vault_address": "0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c",
   "zap_in_to_vault_address": "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E",
   "zap_in_to_pickle_address": "0xc695f73c1862e050059367B2E64489E66c525983",
@@ -8,5 +8,6 @@
   "pickle_jar_address": "0xCeD67a187b923F0E5ebcc77C7f2F7da20099e378",
   "pickle_gauge_address": "0xDA481b277dCe305B97F4091bD66595d57CF31634",
   "yvecrv_vault_address": "0xc5bDdf9843308380375a611c18B50Fb9341f502A",
-  "threecrv_zap_address": "0x579422A1C774470cA623329C69f27cC3bEB935a1"
+  "threecrv_zap_address": "0x579422A1C774470cA623329C69f27cC3bEB935a1",
+  "implementation_yearn_vaults_address": "0x4894d98442f5bea884cd6fa958954f73f58ae9b0"
 }

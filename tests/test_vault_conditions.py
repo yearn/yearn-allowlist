@@ -1,5 +1,5 @@
 import pytest
-from brownie import Contract, ZERO_ADDRESS, chain
+from brownie import Contract, ZERO_ADDRESS, chain, convert
 
 MAX_UINT256 = 2**256-1
 
@@ -8,7 +8,7 @@ def implementation_id():
     return "IMPLEMENTATION_YEARN_VAULTS"
 
 @pytest.fixture(autouse=True)
-def implementation(owner, AllowlistImplementationYearnVaults, allowlist_addresses, allowlist_factory, allowlist, implementation_id):
+def implementation(owner, AllowlistImplementationYearnVaults, allowlist_addresses, allowlist_registry, allowlist, implementation_id):
     use_live_contract = True
 
     _implementation = None
@@ -18,7 +18,7 @@ def implementation(owner, AllowlistImplementationYearnVaults, allowlist_addresse
             _implementation = Contract(allowlist_addresses[key])
     if _implementation == None:
         address_provider = Contract(allowlist_addresses["addresses_provider_address"])
-        _implementation = AllowlistImplementationYearnVaults.deploy(address_provider, allowlist_factory, {"from": owner})
+        _implementation = AllowlistImplementationYearnVaults.deploy(address_provider, allowlist_registry, {"from": owner})
 
     allowlist.setImplementation(implementation_id, _implementation, {"from": owner})
     return _implementation
@@ -48,6 +48,7 @@ def vault_token(vault):
 # Target: Must be a valid vault token
 # Param 0: Must be a valid vault address
 def test_token_approval_for_vault(allowlist_registry, allowlist, owner, origin_name, implementation_id, vault, vault_token):
+    chain.snapshot()
     # Add condition
     condition = (
         "TOKEN_APPROVE_VAULT",
@@ -80,6 +81,7 @@ def test_token_approval_for_vault(allowlist_registry, allowlist, owner, origin_n
     data = vault_token.decimals.encode_input()
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault_token, data)
     assert allowed == False
+    chain.revert()
 
 # Description: Token approvals for vault zaps
 # Signature: "token.approve(address,uint256)"
@@ -88,7 +90,8 @@ def test_token_approval_for_vault(allowlist_registry, allowlist, owner, origin_n
 #   - zap_in_yearn_address: "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E"
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 #   - another address on the custom 
-def test_token_approval_for_zap(allowlist_registry, allowlist, owner, allowlist_addresses, origin_name, implementation_id, vault_token):
+def test_token_approval_for_zap(allowlist_registry, allowlist, owner, allowlist_addresses, origin_name, implementation_id, vault_token, implementation):
+    chain.snapshot()
     # This test is not supported on all networks
     test_supported = "zap_in_to_vault_address" in allowlist_addresses
     if (chain.id == 1):
@@ -124,6 +127,52 @@ def test_token_approval_for_zap(allowlist_registry, allowlist, owner, allowlist_
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault_token, data)
     assert allowed == True
 
+    chain.revert()
+
+
+# Description: Approval of the migrator contract
+# Signature: "token.approve(address,uint256)"
+# Target: Must be a migrator contract
+# Param 0: Must be a valid vault address
+def test_migrator_approval_for_vault(allowlist_registry, allowlist, owner, origin_name, implementation_id, implementation, vault, allowlist_addresses):
+    chain.snapshot()
+
+    test_supported = "migrator_address_standard" in allowlist_addresses
+    if (chain.id == 1):
+        assert test_supported == True
+    if (test_supported == False):
+        return
+    migrator_contract = Contract(allowlist_addresses["migrator_address_standard"])
+
+    # Add condition
+    condition = (
+        "TOKEN_APPROVE_MIGRATOR",
+        implementation_id,
+        "approve",
+        ["address", "uint256"],
+        [
+            ["target", "isVault"], 
+            ["param", "isMigratorContract", "0"]
+        ]
+    )
+    allowlist.addCondition(condition, {"from": owner})
+    
+    # Test valid calldata (before updating implementation) - token.approve(migator_contract, UINT256_MAX)
+    data = vault.approve.encode_input(migrator_contract, MAX_UINT256)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
+    assert allowed == False
+
+    # Set zapper contract addresse
+    implementation.setIsMigratorContract(migrator_contract, True, {"from": owner})
+    assert implementation.isMigratorContract(migrator_contract) == True
+
+    # Test valid calldata (after updating implementation) - token.approve(migator_contract, UINT256_MAX)
+    data = vault.approve.encode_input(migrator_contract, MAX_UINT256)
+    allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
+    assert allowed == True
+
+    chain.revert()
+
 ##############################################################
 # Target: Vaults
 ##############################################################
@@ -133,7 +182,8 @@ def test_token_approval_for_zap(allowlist_registry, allowlist, owner, allowlist_
 # Description: Vault deposit
 # Signature: "vault.deposit(uint256)"
 # Target: Must be a valid vault address
-def test_vault_deposit(allowlist_registry, allowlist, owner, origin_name, implementation_id, vault, vault_token):
+def test_vault_deposit(allowlist_registry, allowlist, owner, origin_name, implementation_id, vault):
+    chain.snapshot()
     # Test deposit before adding condition - vault.deposit(amount)
     data = vault.deposit.encode_input(MAX_UINT256)
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
@@ -155,12 +205,14 @@ def test_vault_deposit(allowlist_registry, allowlist, owner, origin_name, implem
     data = vault.deposit.encode_input(MAX_UINT256)
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
     assert allowed == True
+    chain.revert()
     
 # Vault withdrawals
 
 # Signature: "vault.withdraw(uint256)"
 # Target: Must be a valid vault address
 def test_vault_withdraw(allowlist_registry, allowlist, owner, origin_name, implementation_id, vault):
+    chain.snapshot()
     # Test withdraw before adding condition - vault.withdraw(amount)
     data = vault.withdraw.encode_input(MAX_UINT256)
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
@@ -182,6 +234,7 @@ def test_vault_withdraw(allowlist_registry, allowlist, owner, origin_name, imple
     data = vault.withdraw.encode_input(MAX_UINT256)
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
     assert allowed == True
+    chain.revert()
 
 # Vault approvals
 
@@ -194,6 +247,7 @@ def test_vault_withdraw(allowlist_registry, allowlist, owner, origin_name, imple
 #     - trustedVaultMigrator: "0x1824df8D751704FA10FA371d62A37f9B8772ab90"
 #     - triCryptoVaultMigrator: "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
 def test_vault_zap_out_approval(allowlist_registry, allowlist, owner, origin_name, implementation, implementation_id, vault, vault_token, allowlist_addresses):
+    chain.snapshot()
     # Zap out approvals
     zap_out_of_vault_address = "zap_out_of_vault_address"
     test_supported = zap_out_of_vault_address in allowlist_addresses
@@ -241,6 +295,8 @@ def test_vault_zap_out_approval(allowlist_registry, allowlist, owner, origin_nam
     test_supported = migrator_address_standard in allowlist_addresses
     if (chain.id == 1):
         assert test_supported == True
+    
+    chain.revert()
 
 # Description: Vault zap out approval
 # Signature: "vault.approve(address,uint256)"
@@ -249,6 +305,7 @@ def test_vault_zap_out_approval(allowlist_registry, allowlist, owner, origin_nam
 #   - trustedVaultMigrator: "0x1824df8D751704FA10FA371d62A37f9B8772ab90"
 #   - triCryptoVaultMigrator: "0xC306a5ef4B990A7F2b3bC2680E022E6a84D75fC1"
 def test_vault_migrator_approval(allowlist_registry, allowlist, owner, origin_name, implementation, implementation_id, vault, vault_token, allowlist_addresses):
+    chain.snapshot()
     # Vault migrator approvals
     migrator_address_standard = "migrator_address_standard"
     test_supported = migrator_address_standard in allowlist_addresses
@@ -291,6 +348,8 @@ def test_vault_migrator_approval(allowlist_registry, allowlist, owner, origin_na
         data = vault.approve.encode_input(not_migrator, MAX_UINT256)
         allowed = allowlist_registry.validateCalldataByOrigin(origin_name, vault, data)
         assert allowed == False
+    
+    chain.revert()
 
 
 ##############################################################
@@ -305,6 +364,7 @@ def test_vault_migrator_approval(allowlist_registry, allowlist, owner, origin_na
 #   - zap_in_yearn_address: "0x92Be6ADB6a12Da0CA607F9d87DB2F9978cD6ec3E"
 # Param 2: Must be a valid vault address
 def test_zap_in_to_vault(allowlist_registry, allowlist, owner, origin_name, implementation, implementation_id, vault, allowlist_addresses):
+    chain.snapshot()
     # This test is not supported on all networks
     zap_in_to_vault_address = "zap_in_to_vault_address"
     test_supported = zap_in_to_vault_address in allowlist_addresses
@@ -342,7 +402,7 @@ def test_zap_in_to_vault(allowlist_registry, allowlist, owner, origin_name, impl
             MAX_UINT256, 
             ZERO_ADDRESS, 
             ZERO_ADDRESS, 
-            to_bytes('0x0'), 
+            convert.to_bytes('0x0'), 
             ZERO_ADDRESS, 
             False
         )
@@ -371,6 +431,8 @@ def test_zap_in_to_vault(allowlist_registry, allowlist, owner, origin_name, impl
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, zap_in_contract, data)
     assert allowed == False
 
+    chain.revert()
+
 # Standard zap out
 
 # Description: Zapping out of a yVault
@@ -379,6 +441,7 @@ def test_zap_in_to_vault(allowlist_registry, allowlist, owner, origin_name, impl
 #   - zap_out_yearn_address: "0xd6b88257e91e4E4D4E990B3A858c849EF2DFdE8c"
 # Param 0: Must be a valid vault address
 def test_zap_out_of_vault(allowlist_registry, allowlist, owner, origin_name, implementation, implementation_id, vault, allowlist_addresses):
+    chain.snapshot()
     # This test is not supported on all networks
     zap_out_of_vault_address = "zap_out_of_vault_address"
     test_supported = zap_out_of_vault_address in allowlist_addresses
@@ -416,7 +479,7 @@ def test_zap_out_of_vault(allowlist_registry, allowlist, owner, origin_name, imp
             False,
             MAX_UINT256,
             ZERO_ADDRESS,
-            to_bytes('0x0'),
+            convert.to_bytes('0x0'),
             ZERO_ADDRESS,
             False
         )
@@ -445,6 +508,8 @@ def test_zap_out_of_vault(allowlist_registry, allowlist, owner, origin_name, imp
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, zap_out_contract, data)
     assert allowed == False
 
+    chain.revert()
+
 # Pickle zap in
 
 # Description: Zapping into a pickle vault
@@ -453,6 +518,7 @@ def test_zap_out_of_vault(allowlist_registry, allowlist, owner, origin_name, imp
 #   - zap_in_pickle_address: "0xc695f73c1862e050059367B2E64489E66c525983"
 # Param 2: Must be the yvBOOST/ETH SLP pickle jar
 def test_zap_in_to_pickle_jar(allowlist_registry, allowlist, owner, origin_name, implementation, implementation_id, vault, allowlist_addresses):
+    chain.snapshot()
     # This test is not supported on all networks
     zap_in_to_pickle_address = "zap_in_to_pickle_address"
     pickle_jar_address = "pickle_jar_address"
@@ -497,7 +563,7 @@ def test_zap_in_to_pickle_jar(allowlist_registry, allowlist, owner, origin_name,
             MAX_UINT256,
             ZERO_ADDRESS, 
             ZERO_ADDRESS, 
-            to_bytes('0x0'), 
+            convert.to_bytes('0x0'), 
             ZERO_ADDRESS
         )
     
@@ -525,6 +591,8 @@ def test_zap_in_to_pickle_jar(allowlist_registry, allowlist, owner, origin_name,
     allowed = allowlist_registry.validateCalldataByOrigin(origin_name, zap_in_contract, data)
     assert allowed == False
 
+    chain.revert()
+
 ##############################################################
 # Target: Migrators
 ##############################################################
@@ -535,6 +603,7 @@ def test_zap_in_to_pickle_jar(allowlist_registry, allowlist, owner, origin_name,
 # Signature: "tricrypto_migrator.migrate_to_new_vault()"
 # Target: Must be valid migrator
 def test_migrate_tricrypto(allowlist_registry, allowlist, owner, origin_name, implementation, implementation_id, allowlist_addresses):
+    chain.snapshot()
     if "migrator_address_tricrypto" in allowlist_addresses:
         tricrypto_migrator = Contract(allowlist_addresses["migrator_address_tricrypto"])
         implementation.setIsMigratorContract(tricrypto_migrator, True, {"from": owner})
@@ -566,6 +635,8 @@ def test_migrate_tricrypto(allowlist_registry, allowlist, owner, origin_name, im
         data = tricrypto_migrator.migrate_to_new_vault.encode_input()
         allowed = allowlist_registry.validateCalldataByOrigin(origin_name, tricrypto_migrator, data)
         assert allowed == False
+
+    chain.revert()
         
 # Description: Standard migration
 # Signature: "migrator.migrateAll(address,address)"
@@ -573,6 +644,7 @@ def test_migrate_tricrypto(allowlist_registry, allowlist, owner, origin_name, im
 # Param0: Must be a valid vault token
 # Param1: Must be a valid vault token
 def test_migrate_standard(allowlist_registry, allowlist, owner, origin_name, implementation, implementation_id, allowlist_addresses, vault):
+    chain.snapshot()
     if "migrator_address_standard" in allowlist_addresses:
         migrator = Contract(allowlist_addresses["migrator_address_standard"])
         implementation.setIsMigratorContract(migrator, True, {"from": owner})
@@ -606,6 +678,8 @@ def test_migrate_standard(allowlist_registry, allowlist, owner, origin_name, imp
         data = migrator.migrateAll.encode_input(vault, vault)
         allowed = allowlist_registry.validateCalldataByOrigin(origin_name, migrator, data)
         assert allowed == False
+    
+    chain.revert()
 
 def test_conditions_json(allowlist):
     all_conditions_json = allowlist.conditionsJson()
