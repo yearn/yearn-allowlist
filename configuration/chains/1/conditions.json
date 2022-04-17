@@ -96,6 +96,27 @@
     ]
   },
   {
+    "id": "ZAP_OUT_OF_VAULT_WITH_PERMIT",
+    "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
+    "methodName": "ZapOutWithPermit",
+    "paramTypes": [
+      "address",
+      "uint256",
+      "address",
+      "bool",
+      "uint256",
+      "bytes",
+      "address",
+      "bytes",
+      "address",
+      "bool"
+    ],
+    "requirements": [
+      ["target", "isZapOutContract"],
+      ["param", "isVault", "0"]
+    ]
+  },
+  {
     "id": "ZAP_IN_TO_PICKLE_JAR",
     "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
     "methodName": "ZapIn",
