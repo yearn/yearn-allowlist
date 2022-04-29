@@ -183,5 +183,25 @@
     "methodName": "claim",
     "paramTypes": [],
     "requirements": [["target", "isYveCRV"]]
+  },
+  {
+    "id": "PARTNER_TRACKER_DEPOSIT",
+    "implementationId": "IMPLEMENTATION_PARTNER_TRACKER",
+    "methodName": "deposit",
+    "paramTypes": ["address", "address"],
+    "requirements": [
+      ["target", "isPartnerTracker"],
+      ["param", "isVault", "0"]
+    ]
+  },
+  {
+    "id": "PARTNER_TRACKER_DEPOSIT_WITH_AMOUNT",
+    "implementationId": "IMPLEMENTATION_PARTNER_TRACKER",
+    "methodName": "deposit",
+    "paramTypes": ["address", "address", "uint256"],
+    "requirements": [
+      ["target", "isPartnerTracker"],
+      ["param", "isVault", "0"]
+    ]
   }
 ]
