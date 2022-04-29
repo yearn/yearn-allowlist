@@ -31,7 +31,7 @@ contract AllowlistImplementationPartnerTracker {
     * @param _address the address to validate
     * @return returns true if the input is the partner tracker
     */
-    function isPartnerTracker(address _address) external view returns (bool) {
+    function isPartnerTracker(address _address) external pure returns (bool) {
         return _address == partnerTracker;
     }
 
