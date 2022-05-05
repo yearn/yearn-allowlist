@@ -14,10 +14,7 @@
     "implementationId": "IMPLEMENTATION_YEARN_VAULTS",
     "methodName": "approve",
     "paramTypes": ["address", "uint256"],
-    "requirements": [
-      ["target", "isVaultUnderlyingToken"],
-      ["param", "isZapInContract", "0"]
-    ]
+    "requirements": [["param", "isZapInContract", "0"]]
   },
   {
     "id": "VAULT_DEPOST",
