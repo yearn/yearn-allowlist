@@ -200,5 +200,36 @@
       ["target", "isPartnerTracker"],
       ["param", "isVault", "0"]
     ]
+  },
+  {
+    "id": "TOKEN_APPROVE_VEYFI",
+    "implementationId": "IMPLEMENTATION_VEYFI",
+    "methodName": "approve",
+    "paramTypes": ["address", "uint256"],
+    "requirements": [
+      ["target", "isRewardToken"],
+      ["param", "isVotingEscrow", "0"]
+    ]
+  },
+  {
+    "id": "VEYFI_LOCK",
+    "implementationId": "IMPLEMENTATION_VEYFI",
+    "methodName": "modify_lock",
+    "paramTypes": ["uint256", "uint256", "address"],
+    "requirements": [["target", "isVotingEscrow"]]
+  },
+  {
+    "id": "VEYFI_WITHDRAW",
+    "implementationId": "IMPLEMENTATION_VEYFI",
+    "methodName": "withdraw",
+    "paramTypes": [],
+    "requirements": [["target", "isVotingEscrow"]]
+  },
+  {
+    "id": "VEYFI_REWARDS_CLAIM",
+    "implementationId": "IMPLEMENTATION_VEYFI",
+    "methodName": "claim",
+    "paramTypes": ["address", "bool"],
+    "requirements": [["target", "isRewardPool"]]
   }
 ]
