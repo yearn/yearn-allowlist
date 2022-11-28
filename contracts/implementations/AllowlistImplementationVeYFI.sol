@@ -4,13 +4,13 @@ pragma solidity 0.8.11;
 /*******************************************************
  *                      Interfaces
  *******************************************************/
+interface IVeYfi {
+  function token() external view returns(address);
+
+  function reward_pool() external view returns(address);
+}
+
 interface IVeYfiRegistry {
-  function veToken() external view returns(address);
-
-  function yfi() external view returns(address);
-
-  function veYfiRewardPool() external view returns(address);
-
   function isGauge(address) external view returns (bool);
 
   function getVaults() external view returns (address[] memory);
@@ -82,7 +82,7 @@ contract AllowlistImplementationVeYFI {
     view
     returns (bool)
   {
-    return veYfiRegistry().veToken() == contractAddress;
+    return veYfiAddress() == contractAddress;
   }
 
   /**
@@ -95,7 +95,7 @@ contract AllowlistImplementationVeYFI {
     view
     returns (bool)
   {
-    return veYfiRegistry().yfi() == tokenAddress;
+    return veYfi().token() == tokenAddress;
   }
 
   /**
@@ -108,7 +108,7 @@ contract AllowlistImplementationVeYFI {
     view
     returns (bool)
   {
-    return veYfiRegistry().veYfiRewardPool() == contractAddress;
+    return veYfi().reward_pool() == contractAddress;
   }
 
   /**
@@ -143,6 +143,23 @@ contract AllowlistImplementationVeYFI {
   /*******************************************************
    *                    Convienence methods
    *******************************************************/
+
+  /**
+   * @dev Fetch veYFI address
+   */
+  function veYfiAddress() public view returns (address) {
+    return
+      IAddressesProvider(addressesProviderAddress).addressById(
+        "VEYFI"
+      );
+  }
+
+  /**
+   * @dev Fetch veYFI interface
+   */
+  function veYfi() internal view returns (IVeYfi) {
+    return IVeYfi(veYfiAddress());
+  }
 
   /**
    * @dev Fetch veYFI registry address
