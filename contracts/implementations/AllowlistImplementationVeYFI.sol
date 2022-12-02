@@ -34,14 +34,18 @@ contract AllowlistImplementationVeYFI {
   string public constant protocolOriginName = "yearn.finance"; // Protocol owner name (must match the registered domain of the registered allowlist)
   address public addressesProviderAddress; // Used to fetch current veYFI registry
   address public allowlistRegistryAddress; // Used to fetch protocol owner
+  address public snapshotDelegateRegistry; // Used to delegate voting power on snapshot
   mapping(address => bool) public isZapClaimContract; // Used to test zap claim contracts
+  bytes32 public veYfiId; // id for our snapshot voting space
 
   constructor(
     address _addressesProviderAddress,
-    address _allowlistRegistryAddress
+    address _allowlistRegistryAddress,
+    address _snapshotDelegateRegistry
   ) {
     addressesProviderAddress = _addressesProviderAddress; // Set address provider address (can be updated by owner)
     allowlistRegistryAddress = _allowlistRegistryAddress; // Set allowlist registry address (can only be set once)
+    snapshotDelegateRegistry = _snapshotDelegateRegistry; // Set snapshot delegate registry address (can only be set once)
   }
 
   /**
@@ -66,10 +70,34 @@ contract AllowlistImplementationVeYFI {
    * @param allowed If true contract is a valid zap claim contract, if false, contract is not
    */
   function setIsZapClaimContract(address contractAddress, bool allowed)
-    public
+    external
     onlyOwner
   {
     isZapClaimContract[contractAddress] = allowed;
+  }
+
+  /**
+   * @notice Set the id for our veYFI snapshot voting space
+   * @param _id The id for our snapshot voting space
+   */
+  function setVeYfiId(bytes32 _id)
+    external
+    onlyOwner
+  {
+    veYfiId = _id;
+  }
+
+  /**
+   * @notice Determine whether a given id is our current veYFI snapshot space id
+   * @param id The id to test
+   * @return Returns true if the id matches our current veYFI snapshot space and false if not
+   */
+  function isVeYfiSpaceId(bytes32 id)
+    external
+    view
+    returns (bool)
+  {
+    return veYfiId == id;
   }
 
   /**
@@ -78,7 +106,7 @@ contract AllowlistImplementationVeYFI {
    * @return Returns true if the contract address is valid voting escrow contract and false if not
    */
   function isVotingEscrow(address contractAddress)
-    public
+    external
     view
     returns (bool)
   {
@@ -86,12 +114,12 @@ contract AllowlistImplementationVeYFI {
   }
 
   /**
-   * @notice Determine whether or not a token address is a valid reward token
+   * @notice Determine whether or not a token address is our underlying token
    * @param tokenAddress The token address to test
-   * @return Returns true if the token address is valid reward token and false if not
+   * @return Returns true if the token address is the underlying and false if not
    */
-  function isRewardToken(address tokenAddress)
-    public
+  function isUnderlying(address tokenAddress)
+    external
     view
     returns (bool)
   {
@@ -104,7 +132,7 @@ contract AllowlistImplementationVeYFI {
    * @return Returns true if the contract address is valid reward pool contract and false if not
    */
   function isRewardPool(address contractAddress)
-    public
+    external
     view
     returns (bool)
   {
@@ -117,7 +145,7 @@ contract AllowlistImplementationVeYFI {
    * @return Returns true if the gauge address is valid and false if not
    */
   function isGauge(address gaugeAddress)
-    public
+    external
     view
     returns (bool)
   {
@@ -125,11 +153,24 @@ contract AllowlistImplementationVeYFI {
   }
 
   /**
+   * @notice Determine whether or not an address is the snapshot delegate registry
+   * @param registryAddress The address to test
+   * @return Returns true if the address is the snapshot delegate registry and false if not
+   */
+  function isDelegateRegistry(address registryAddress)
+    external
+    view
+    returns (bool)
+  {
+    return snapshotDelegateRegistry == registryAddress;
+  }
+
+  /**
    * @notice Determine whether or not a vault address is a valid vault
    * @param vaultAddress The vault address to test
    * @return Returns true if the vault address is valid and false if not
    */
-  function isVault(address vaultAddress) public view returns (bool) {
+  function isVault(address vaultAddress) external view returns (bool) {
     address[] memory vaultAddresses = veYfiRegistry().getVaults();
     for (uint256 vaultIdx=0; vaultIdx < vaultAddresses.length; vaultIdx++) {
       address currentVaultAddress = vaultAddresses[vaultIdx];
